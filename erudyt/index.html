@@ -1,0 +1,1750 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ерудит</title>
+<meta name="description" content="Сімейна вікторина на 2–4 гравців: від простих питань до складних, на час.">
+<meta name="theme-color" content="#1d1530">
+<meta property="og:title" content="Ерудит 🦉">
+<meta property="og:description" content="Заходь на сімейну вікторину — хто з нас ерудит?">
+<meta property="og:image" content="https://cluckh.github.io/destiny/erudyt/og.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ерудит">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Unbounded:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#1d1530; --panel:#2d2142; --panel-2:#3a2a52; --line:#4b3866; --shadow:#150e22;
+  --cream:#fff2de; --muted:#c4afc7; --ink:#2a1608;
+  --pumpkin:#f08a3c; --pumpkin-d:#b5591c;
+  --mustard:#f4b942; --mustard-d:#b78220;
+  --sage:#93b977; --sage-d:#5d7f46;
+  --berry:#e35a72; --berry-d:#9e2f46;
+  --sky:#7fb7d9; --sky-d:#45799c;
+  --spring:cubic-bezier(.3,1.55,.55,1);
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{
+  min-height:100dvh;background:var(--night);color:var(--cream);
+  font-family:'Nunito',system-ui,-apple-system,sans-serif;font-weight:700;font-size:16px;line-height:1.4;
+  -webkit-tap-highlight-color:transparent;overflow-x:hidden;-webkit-font-smoothing:antialiased;
+}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+h1,h2,h3,.disp{font-family:'Unbounded',system-ui,sans-serif;margin:0;letter-spacing:-.01em}
+.hidden{display:none!important}
+.muted{color:var(--muted);font-weight:600}
+.center{text-align:center}
+
+/* ---------- evening sky ---------- */
+.sky{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+  background:
+    radial-gradient(130% 55% at 50% 112%, #d0602e 0%, #9a4126 20%, rgba(106,44,51,0) 58%),
+    linear-gradient(180deg,#191330 0%,#2a1a3f 42%,#46223f 72%,#652b35 100%);}
+.stars{position:absolute;inset:0 0 40% 0;opacity:.75;
+  background-image:
+    radial-gradient(1.6px 1.6px at 12% 18%,#fff 50%,transparent 51%),
+    radial-gradient(1.2px 1.2px at 28% 8%,#ffe9c7 50%,transparent 51%),
+    radial-gradient(1.4px 1.4px at 44% 26%,#fff 50%,transparent 51%),
+    radial-gradient(1px 1px at 61% 12%,#fff 50%,transparent 51%),
+    radial-gradient(1.8px 1.8px at 72% 30%,#ffe9c7 50%,transparent 51%),
+    radial-gradient(1.2px 1.2px at 90% 16%,#fff 50%,transparent 51%),
+    radial-gradient(1px 1px at 6% 40%,#fff 50%,transparent 51%),
+    radial-gradient(1.3px 1.3px at 36% 44%,#fff 50%,transparent 51%),
+    radial-gradient(1px 1px at 82% 48%,#ffe9c7 50%,transparent 51%),
+    radial-gradient(1.5px 1.5px at 54% 38%,#fff 50%,transparent 51%);
+  animation:twinkle 6s ease-in-out infinite alternate}
+@keyframes twinkle{from{opacity:.45}to{opacity:.9}}
+.moon{position:absolute;top:7%;right:9%;width:74px;height:74px;border-radius:50%;
+  background:radial-gradient(circle at 38% 36%,#fff6e4,#f6d9a8 60%,#e9bd7c);
+  box-shadow:0 0 40px 12px rgba(255,214,150,.22),0 0 120px 40px rgba(255,170,90,.12)}
+.moon::after{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:rgba(200,150,90,.25);top:22px;left:40px;box-shadow:-18px 18px 0 -3px rgba(200,150,90,.2)}
+.hills{position:absolute;left:0;right:0;bottom:0;width:100%;height:24vh}
+.leaves{position:absolute;inset:0}
+.leaf{position:absolute;top:-40px;will-change:transform;animation:fall linear infinite}
+.leaf svg{display:block;animation:sway ease-in-out infinite alternate}
+@keyframes fall{to{transform:translateY(112vh)}}
+@keyframes sway{from{transform:translateX(-22px) rotate(-35deg)}to{transform:translateX(22px) rotate(40deg)}}
+
+/* ---------- layout ---------- */
+#app{position:relative;z-index:1;max-width:480px;margin:0 auto;min-height:100dvh;
+  padding:calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 96px)}
+.screen{display:flex;flex-direction:column;gap:16px}
+.enter>*{animation:rise .55s var(--ease) both}
+.enter>*:nth-child(2){animation-delay:.06s}.enter>*:nth-child(3){animation-delay:.12s}
+.enter>*:nth-child(4){animation-delay:.18s}.enter>*:nth-child(5){animation-delay:.24s}
+.enter>*:nth-child(6){animation-delay:.3s}.enter>*:nth-child(7){animation-delay:.36s}
+@keyframes rise{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes pop{0%{opacity:0;transform:scale(.55)}60%{opacity:1;transform:scale(1.07)}100%{transform:scale(1)}}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px) rotate(-2deg)}40%{transform:translateX(8px) rotate(2deg)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+@keyframes wiggle{0%,100%{transform:translateX(0) rotate(0)}50%{transform:translateX(-6px) rotate(-12deg)}}
+.pop{animation:pop .6s var(--spring) both}
+.bob{animation:bob 2.6s ease-in-out infinite}
+.shake{animation:shake .5s ease both}
+
+/* ---------- blocks ---------- */
+.card{background:var(--panel);border:3px solid var(--line);border-radius:22px;padding:18px;
+  box-shadow:0 7px 0 var(--shadow),0 18px 34px rgba(0,0,0,.35)}
+.lbl{display:block;font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px}
+input[type=text],textarea{width:100%;border:3px solid var(--line);background:#231936;border-radius:14px;
+  padding:13px 14px;font-size:17px;font-weight:800;outline:none;transition:border-color .2s,box-shadow .2s;color:var(--cream)}
+textarea{resize:none;min-height:88px;line-height:1.35}
+input::placeholder,textarea::placeholder{color:#8d7896;font-weight:700}
+input:focus,textarea:focus{border-color:var(--pumpkin);box-shadow:0 0 0 4px rgba(240,138,60,.2)}
+
+.btn{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
+  font-family:'Unbounded',sans-serif;font-weight:700;font-size:17px;letter-spacing:.01em;
+  border:0;border-radius:18px;padding:17px 20px;color:var(--ink);
+  --b:var(--pumpkin);--bd:var(--pumpkin-d);background:var(--b);
+  box-shadow:0 6px 0 var(--bd),0 12px 20px rgba(0,0,0,.35);
+  transition:transform .14s var(--spring),box-shadow .14s,filter .2s,opacity .2s}
+.btn::before{content:'';position:absolute;left:12px;right:12px;top:6px;height:9px;border-radius:9px;background:rgba(255,255,255,.3);pointer-events:none}
+.btn:active:not(:disabled){transform:translateY(5px);box-shadow:0 1px 0 var(--bd),0 4px 8px rgba(0,0,0,.3)}
+.btn:disabled{filter:grayscale(.7) brightness(.75);cursor:default}
+.btn.mustard{--b:var(--mustard);--bd:var(--mustard-d)}
+.btn.sage{--b:var(--sage);--bd:var(--sage-d)}
+.btn.sky{--b:var(--sky);--bd:var(--sky-d)}
+.btn.ghost{--b:var(--panel-2);--bd:var(--shadow);color:var(--cream)}
+.btn.ghost::before{background:rgba(255,255,255,.07)}
+.btn.small{font-size:14px;padding:12px 14px;border-radius:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>.btn{flex:1}
+.chip{border:0;border-radius:999px;padding:9px 14px;background:var(--panel-2);font-weight:800;font-size:14px;
+  box-shadow:0 4px 0 var(--shadow);transition:transform .14s var(--spring),box-shadow .14s}
+.chip:active{transform:translateY(3px);box-shadow:0 1px 0 var(--shadow)}
+.tag{display:inline-block;font-family:'Unbounded';font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  background:rgba(244,185,66,.16);color:var(--mustard);padding:6px 10px;border-radius:999px}
+
+/* ---------- avatar ---------- */
+.ava{flex:none;border-radius:22%;background:radial-gradient(circle at 50% 30%,#4a3866,#2b1f40);overflow:hidden;
+  border:3px solid var(--line);box-shadow:0 5px 0 var(--shadow)}
+.ava svg{display:block;width:100%;height:100%}
+.ava.xs{width:34px;height:34px;border-width:2px;box-shadow:0 3px 0 var(--shadow)}
+.ava.sm{width:46px;height:46px}
+.ava.md{width:64px;height:64px}
+.ava.lg{width:96px;height:96px}
+.ava.xl{width:124px;height:124px;border-radius:28px}
+
+/* ---------- home ---------- */
+.logo{text-align:center;padding:14px 0 2px}
+.logo-badge{width:66px;height:66px;margin:0 auto 12px;display:grid;place-items:center;font-size:36px;border-radius:20px;
+  background:var(--mustard);box-shadow:0 6px 0 var(--mustard-d),0 14px 26px rgba(0,0,0,.35);transform:rotate(-8deg);animation:bob 3.2s ease-in-out infinite}
+.logo h1{font-size:40px;font-weight:800;line-height:.98;text-shadow:0 4px 0 rgba(0,0,0,.3)}
+.logo h1 span{color:var(--pumpkin);display:inline-block;transform:rotate(-3deg)}
+.logo p{margin:12px auto 0;max-width:300px}
+.invite{display:flex;gap:12px;align-items:center;background:linear-gradient(135deg,#5a2c4a,#3a2552);border-color:#7a4466}
+.invite .ico{font-size:30px;animation:wiggle 1.6s ease-in-out infinite}
+
+.ed-top{display:flex;gap:16px;align-items:center}
+.ed-side{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+.ed-side .chip{align-self:flex-start}
+.tabs{display:flex;gap:6px;margin:18px 0 12px;background:#231936;padding:5px;border-radius:16px}
+.tabs button{flex:1;border:0;background:transparent;padding:9px 4px;border-radius:12px;font-size:13px;font-weight:800;color:var(--muted);transition:background .25s var(--ease),color .25s}
+.tabs button.on{background:var(--panel-2);color:var(--cream);box-shadow:0 3px 0 var(--shadow)}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.grid button{aspect-ratio:1;border:3px solid transparent;border-radius:16px;background:#231936;padding:3px;transition:transform .2s var(--spring),border-color .2s}
+.grid button svg{width:100%;height:100%;display:block}
+.grid button.on{border-color:var(--pumpkin);transform:scale(1.06);background:#3b2850}
+.grid button:active{transform:scale(.92)}
+.swatch{display:block;width:100%;height:100%;border-radius:11px;box-shadow:inset 0 -6px 0 rgba(0,0,0,.18),inset 0 4px 0 rgba(255,255,255,.25)}
+.ava-pop{animation:pop .45s var(--spring)}
+
+/* ---------- lobby ---------- */
+.versus{display:flex;align-items:center;justify-content:space-around;gap:8px;padding:8px 0}
+.versus .slot{display:flex;flex-direction:column;align-items:center;gap:10px;width:42%}
+.versus .slot b{font-family:'Unbounded';font-size:15px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.versus .vs{font-family:'Unbounded';font-weight:800;color:var(--mustard);font-size:20px;transform:rotate(-8deg)}
+.empty-slot{width:96px;height:96px;border-radius:22%;border:3px dashed #6b5590;display:grid;place-items:center;font-family:'Unbounded';font-size:34px;color:#8e78b2;animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.06);opacity:1}}
+.status{display:flex;align-items:center;gap:10px;justify-content:center;font-size:14px;color:var(--muted);font-weight:700}
+.spin{width:18px;height:18px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:var(--pumpkin);animation:spin .8s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.linkbox{font-size:13px;color:var(--muted);background:#231936;border-radius:12px;padding:10px 12px;word-break:break-all;font-weight:700}
+
+/* ---------- game top ---------- */
+.top{display:flex;align-items:center;gap:8px}
+.pl{flex:1;min-width:0;display:flex;align-items:center;gap:9px;background:var(--panel);border:3px solid var(--line);border-radius:18px;padding:7px 10px 7px 7px;box-shadow:0 5px 0 var(--shadow);position:relative;transition:border-color .3s}
+.pl.right{flex-direction:row-reverse;padding:7px 7px 7px 10px;text-align:right}
+.pl.turn{border-color:var(--mustard)}
+.pl .meta{min-width:0;flex:1}
+.pl .nm{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl .sc{font-family:'Unbounded';font-weight:800;font-size:19px;line-height:1.1;display:inline-block}
+.pl .sc.bump{animation:pop .55s var(--spring)}
+.pl .dot{position:absolute;top:-4px;width:13px;height:13px;border-radius:50%;background:#7c6a86;border:3px solid var(--night)}
+.pl:not(.right) .dot{left:-4px}.pl.right .dot{right:-4px}
+.pl .dot.on{background:#7ee08a;box-shadow:0 0 10px #7ee08a}
+.pl .role{position:absolute;bottom:-9px;font-size:15px}
+.pl:not(.right) .role{left:34px}.pl.right .role{right:34px}
+.menu-btn{flex:none;width:44px;height:44px;border-radius:14px;border:0;background:var(--panel-2);box-shadow:0 5px 0 var(--shadow);font-size:20px;font-weight:900}
+.banner{border-radius:14px;padding:10px 14px;font-size:14px;display:flex;gap:10px;align-items:center;background:rgba(227,90,114,.18);border:2px solid rgba(227,90,114,.4);animation:rise .4s var(--ease)}
+
+/* ---------- stage ---------- */
+#stage{display:flex;flex-direction:column;gap:16px}
+.stage-head{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.stage-head h2{font-size:26px;font-weight:800;line-height:1.1}
+.stage-head p{margin:0}
+.qcard{display:flex;gap:14px;align-items:flex-start}
+.qcard .who{font-size:13px;color:var(--muted);font-weight:800;margin-bottom:3px}
+.qtext{font-family:'Unbounded';font-weight:600;font-size:19px;line-height:1.3;word-wrap:break-word;overflow-wrap:anywhere}
+.opts{display:flex;flex-direction:column;gap:12px}
+.opt{--c:var(--pumpkin);position:relative;display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  padding:13px 14px;border-radius:18px;border:3px solid transparent;background:var(--panel-2);
+  box-shadow:0 5px 0 var(--shadow);font-weight:800;font-size:17px;line-height:1.25;
+  transition:transform .3s var(--spring),background .25s,border-color .25s,box-shadow .2s,opacity .3s}
+.opt .let{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex:none;font-family:'Unbounded';font-size:15px;
+  background:var(--c);color:var(--ink);box-shadow:inset 0 -4px 0 rgba(0,0,0,.18)}
+.opt .tx{flex:1;min-width:0;overflow-wrap:anywhere}
+.opt:active:not(:disabled){transform:scale(.97)}
+.opt.sel{border-color:var(--c);transform:scale(1.03);background:#4a3466}
+.opt.right{background:var(--sage);color:var(--ink);border-color:#c8e6b0}
+.opt.right .let{background:#fff2de}
+.opt.wrong{background:var(--berry);color:var(--ink)}
+.opt.dim{opacity:.45}
+.opt:disabled{cursor:default}
+.opt .badge{font-size:12px;font-weight:900;padding:4px 8px;border-radius:999px;background:rgba(147,185,119,.22);color:var(--sage);white-space:nowrap}
+.opt.right .badge{background:rgba(42,22,8,.15);color:var(--ink)}
+.finger{position:absolute;right:-6px;top:50%;font-size:30px;margin-top:-20px;opacity:0;transform:scale(.4);transition:opacity .2s,transform .3s var(--spring);pointer-events:none;filter:drop-shadow(0 3px 0 rgba(0,0,0,.3))}
+.opt.sel .finger{opacity:1;transform:scale(1);animation:wiggle .9s ease-in-out infinite}
+
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.seg button{border:3px solid transparent;border-radius:16px;background:#231936;padding:10px 4px 9px;display:flex;flex-direction:column;align-items:center;gap:1px;
+  box-shadow:0 4px 0 var(--shadow);transition:transform .25s var(--spring),border-color .2s,background .2s}
+.seg button .e{font-size:24px}
+.seg button b{font-family:'Unbounded';font-size:17px}
+.seg button small{font-size:12px;color:var(--muted);font-weight:800}
+.seg button.on{border-color:var(--mustard);background:#3f2c4f;transform:translateY(-3px)}
+
+.optedit{--c:var(--pumpkin);display:flex;gap:9px;align-items:center;margin-bottom:10px;animation:rise .35s var(--ease) both}
+.optedit .mark{width:46px;height:46px;flex:none;border-radius:14px;border:3px solid var(--c);background:transparent;display:grid;place-items:center;
+  font-family:'Unbounded';font-size:15px;color:var(--c);transition:transform .25s var(--spring),background .2s,color .2s}
+.optedit.ok .mark{background:var(--sage);border-color:var(--sage);color:var(--ink);transform:rotate(-8deg) scale(1.05)}
+.optedit input{flex:1;min-width:0}
+.optedit .rm{width:34px;height:34px;flex:none;border-radius:10px;border:0;background:transparent;color:#8d7896;font-size:18px}
+.hint{font-size:13px;color:var(--muted);margin:2px 0 12px}
+.err{color:#ff9aa9;font-size:14px;font-weight:800;min-height:20px;text-align:center;margin-top:-6px}
+
+.wait{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:28px 18px}
+.wait h2{font-size:21px;line-height:1.2}
+.typing{display:inline-flex;align-items:center;gap:8px;font-weight:800;color:var(--mustard);min-height:24px;transition:opacity .25s}
+.typing.off{opacity:0}
+.dots{display:inline-flex;gap:4px}
+.dots i{width:7px;height:7px;border-radius:50%;background:currentColor;animation:dot 1s infinite ease-in-out}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-6px);opacity:1}}
+
+.result{text-align:center;border-radius:24px;padding:20px 16px;color:var(--ink);box-shadow:0 7px 0 var(--sage-d),0 18px 30px rgba(0,0,0,.35);background:var(--sage)}
+.result.bad{background:var(--berry);box-shadow:0 7px 0 var(--berry-d),0 18px 30px rgba(0,0,0,.35)}
+.result .big{font-family:'Unbounded';font-weight:800;font-size:30px;line-height:1.05}
+.result .delta{font-family:'Unbounded';font-weight:800;font-size:22px;margin-top:6px}
+.result .sub{font-weight:800;margin-top:6px;font-size:15px;opacity:.85}
+.story-text{font-size:17px;font-weight:700;font-style:italic;min-height:24px;overflow-wrap:anywhere}
+.story-text.empty{color:#8d7896;font-style:normal}
+
+.mirror-banner{font-family:'Unbounded';font-weight:800;font-size:22px;text-align:center;padding:14px;border-radius:20px;
+  background:linear-gradient(135deg,#7fb7d9,#b8a1f2);color:var(--ink);box-shadow:0 6px 0 #4d5f9c,0 14px 26px rgba(0,0,0,.35)}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.duo .card{padding:14px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px}
+.duo .nm{font-family:'Unbounded';font-size:14px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.duo .k{font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.duo .v{font-weight:900;font-size:15px}
+.pill{display:inline-block;font-family:'Unbounded';font-size:13px;padding:5px 10px;border-radius:999px;background:var(--sage);color:var(--ink)}
+.pill.no{background:var(--berry)}
+.meter{height:16px;border-radius:999px;background:#231936;overflow:hidden;box-shadow:inset 0 3px 0 rgba(0,0,0,.25)}
+.meter i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--pumpkin),var(--mustard));transition:width 1.2s var(--ease)}
+.donecheck{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.donecheck span{display:inline-flex;align-items:center;gap:7px;background:#231936;border-radius:999px;padding:5px 12px 5px 5px;font-size:14px}
+
+/* reactions */
+.react{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 14px);transform:translateX(-50%);z-index:5;display:flex;gap:4px;
+  background:rgba(45,33,66,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:3px solid var(--line);border-radius:999px;padding:5px;box-shadow:0 6px 0 var(--shadow)}
+.react button{width:44px;height:44px;border:0;border-radius:50%;background:transparent;font-size:24px;transition:transform .2s var(--spring)}
+.react button:active{transform:scale(1.35)}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:30;overflow:hidden}
+.float{position:absolute;bottom:80px;font-size:44px;will-change:transform,opacity}
+.confetti{position:absolute;top:40%;left:50%;font-size:26px;will-change:transform,opacity}
+
+/* toast & sheet */
+#toasts{position:fixed;top:calc(env(safe-area-inset-top) + 12px);left:0;right:0;z-index:40;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 16px}
+.toast{background:var(--cream);color:var(--ink);font-weight:900;border-radius:16px;padding:11px 16px;box-shadow:0 5px 0 #c9b28f,0 12px 24px rgba(0,0,0,.35);max-width:440px;text-align:center;animation:pop .45s var(--spring) both}
+.toast.out{animation:toastout .35s var(--ease) forwards}
+@keyframes toastout{to{opacity:0;transform:translateY(-12px) scale(.95)}}
+.sheet{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet-bg{position:absolute;inset:0;background:rgba(10,6,18,.6);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);animation:fade .3s both}
+@keyframes fade{from{opacity:0}}
+.sheet-body{position:relative;width:100%;max-width:480px;max-height:88dvh;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--panel);border:3px solid var(--line);border-bottom:0;
+  border-radius:28px 28px 0 0;padding:22px 16px calc(env(safe-area-inset-bottom) + 22px);display:flex;flex-direction:column;gap:14px;animation:sheetup .45s var(--ease) both}
+@keyframes sheetup{from{transform:translateY(100%)}}
+.sheet.closing .sheet-body{animation:sheetdown .3s var(--ease) forwards}.sheet.closing .sheet-bg{animation:fade .3s reverse forwards}
+@keyframes sheetdown{to{transform:translateY(100%)}}
+.grab{width:44px;height:5px;border-radius:5px;background:var(--line);margin:-8px auto 2px}
+.sheet h3{font-size:20px}
+.dos-sec{display:flex;flex-direction:column;gap:10px}
+.dos-head{display:flex;align-items:center;gap:10px;font-family:'Unbounded';font-size:15px}
+.fact{background:#231936;border-radius:16px;padding:12px 14px}
+.fact .q{font-weight:800}
+.fact .a{color:var(--pumpkin);font-weight:900;margin-top:3px}
+.fact .s{color:var(--muted);font-style:italic;margin-top:4px;font-weight:600}
+.fact .m{font-size:13px;color:var(--muted);margin-top:4px}
+.scoreline{display:flex;align-items:center;justify-content:center;gap:16px;font-family:'Unbounded';font-weight:800;font-size:30px}
+.coin{width:120px;height:120px;border-radius:50%;margin:10px auto;display:grid;place-items:center;font-size:54px;background:radial-gradient(circle at 35% 30%,#ffe7a3,#f4b942 55%,#b78220);
+  box-shadow:0 8px 0 #8a5f12,0 20px 40px rgba(0,0,0,.45);animation:flip 1.4s var(--ease) both}
+@keyframes flip{0%{transform:rotateY(0) translateY(0)}50%{transform:rotateY(900deg) translateY(-60px)}100%{transform:rotateY(1800deg) translateY(0)}}
+.imgprev{width:100%;border-radius:16px;display:block}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .leaves{display:none}
+}
+@media (max-width:360px){
+  .logo h1{font-size:34px}.stage-head h2{font-size:22px}.ava.xl{width:104px;height:104px}.grid{gap:7px}
+}
+
+/* ---------- Ерудит ---------- */
+.logo-badge.owl{background:var(--sky);box-shadow:0 6px 0 var(--sky-d),0 14px 26px rgba(0,0,0,.35)}
+.top{justify-content:space-between}
+.brand{display:flex;align-items:center;gap:9px;background:var(--panel);border:3px solid var(--line);border-radius:16px;padding:7px 13px 7px 9px;box-shadow:0 5px 0 var(--shadow)}
+.brand .b-ico{font-size:22px}.brand .disp{font-weight:800;font-size:15px}
+.prog{font-family:'Unbounded';font-size:15px;color:var(--muted);background:var(--panel);border:3px solid var(--line);border-radius:16px;padding:9px 14px;box-shadow:0 5px 0 var(--shadow)}
+.prog b{color:var(--mustard);font-size:18px}
+.slots{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.slot{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px 12px;background:#231936;border-radius:18px;text-align:center;animation:pop .5s var(--spring) both}
+.slot .nm{font-family:'Unbounded';font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slot .st{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.slot .crown{position:absolute;top:6px;left:9px;font-size:18px;transform:rotate(-14deg)}
+.slot.off{opacity:.55}
+.slot.empty{animation:none}
+.okdot{width:9px;height:9px;border-radius:50%;background:#7ee08a;box-shadow:0 0 8px #7ee08a;display:inline-block}
+.empty-slot.sm{width:96px;height:96px;font-size:28px}
+.seg button:disabled{cursor:default}
+.seg button:disabled:not(.on){opacity:.55}
+.rules p{margin:0 0 8px;font-weight:700;font-size:15px}.rules p:last-child{margin:0}
+.intro{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:34px 18px;animation:pop .6s var(--spring) both}
+.intro .i-cat{font-size:64px;animation:bob 2s ease-in-out infinite}
+.intro .i-num{font-family:'Unbounded';font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.intro h2{font-size:28px}
+.final-tag{font-family:'Unbounded';font-weight:700;font-size:14px;background:var(--berry);color:var(--ink);padding:8px 14px;border-radius:999px;box-shadow:0 4px 0 var(--berry-d);animation:pulse 1s ease-in-out infinite}
+.diff{font-size:18px;letter-spacing:2px;color:var(--mustard);font-weight:900}
+.diff i{font-style:normal;opacity:.22}.diff i.on{opacity:1}
+.diff span{font-family:'Unbounded';font-size:12px;letter-spacing:.05em;margin-left:6px;color:var(--muted)}
+.qwrap{display:none;flex-direction:column;gap:14px}
+.qwrap.show{display:flex;animation:rise .45s var(--ease) both}
+.qmeta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tag.hot{background:rgba(227,90,114,.2);color:#ff9aa9}
+.timerrow{display:flex;align-items:center;gap:12px}
+.timer{flex:1;height:16px;border-radius:999px;background:#231936;overflow:hidden;box-shadow:inset 0 3px 0 rgba(0,0,0,.25)}
+.timer i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--sage),var(--mustard));transform-origin:left center;transition:background .3s}
+.timer.low i{background:linear-gradient(90deg,var(--berry),var(--pumpkin))}
+.tsec{font-family:'Unbounded';font-weight:800;font-size:22px;min-width:40px;text-align:right}
+.tsec.low{color:#ff8a9c;animation:pulse .5s ease-in-out infinite}
+.qtext.big{font-size:21px}
+.opt.gone{opacity:.12;transform:scale(.94);pointer-events:none}
+.locked{text-align:center;font-weight:800;color:var(--mustard);padding:6px}
+.joker{align-self:center;font-size:15px;padding:11px 18px;background:#3f2c4f}
+.joker:disabled{opacity:.45}
+.answered{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding-top:4px}
+.answered .a{position:relative;transition:transform .3s var(--spring),opacity .3s;opacity:.55}
+.answered .a.done{opacity:1;transform:translateY(-3px)}
+.answered .ck{position:absolute;right:-5px;bottom:-5px;width:22px;height:22px;border-radius:50%;background:var(--sage);color:var(--ink);font-size:12px;font-weight:900;display:grid;place-items:center;border:3px solid var(--night);transform:scale(0);transition:transform .35s var(--spring)}
+.answered .a.done .ck{transform:scale(1)}
+.pickers{display:flex;flex:none}
+.pk{width:30px;height:30px;border-radius:9px;background:#2b1f40;border:2px solid var(--night);margin-left:-8px;overflow:hidden;animation:pop .5s var(--spring) both}
+.pk svg{width:100%;height:100%;display:block}
+.result .delta small{font-size:14px}
+.factbox{background:linear-gradient(135deg,#3b3163,#2d2142);border-color:#5b4c8a}
+.fact-text{font-size:16px;font-weight:700;line-height:1.45}
+.board{position:relative}
+.brow{position:absolute;left:0;right:0;height:56px;display:flex;align-items:center;gap:10px;padding:0 12px;background:#231936;border-radius:16px;transition:top .9s var(--spring)}
+.brow.me{box-shadow:inset 0 0 0 3px var(--pumpkin)}
+.brow .pos{font-family:'Unbounded';font-weight:800;width:20px;color:var(--mustard)}
+.brow .nm{flex:1;min-width:0;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brow .gain{font-size:13px;font-weight:900;color:var(--sage);animation:pop .5s var(--spring) .5s both}
+.brow .pts{font-family:'Unbounded';font-weight:800;font-size:17px;min-width:52px;text-align:right}
+.readyrow{display:flex;gap:8px;justify-content:center;margin-top:-4px}
+.readyrow span{display:inline-flex;align-items:center;gap:4px;opacity:.5;font-weight:900;color:var(--sage);transition:opacity .3s}
+.readyrow span.done{opacity:1}
+.nextbar{height:6px;border-radius:6px;background:#231936;overflow:hidden;margin-top:-6px}
+.nextbar i{display:block;height:100%;background:var(--muted);transform-origin:left center;opacity:.6}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-top:6px}
+.pod{display:flex;flex-direction:column;align-items:center;gap:6px;width:31%;min-width:0;position:relative}
+.pod .nm{font-family:'Unbounded';font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod .sc{font-family:'Unbounded';font-weight:800;color:var(--mustard)}
+.pod .col{width:100%;border-radius:18px 18px 8px 8px;display:flex;justify-content:center;padding-top:10px;font-family:'Unbounded';font-weight:800;font-size:30px;color:var(--ink);
+  box-shadow:inset 0 -8px 0 rgba(0,0,0,.18),0 8px 0 var(--shadow);transform-origin:bottom center;animation:grow 1s var(--spring) both}
+.pod.p1 .col{height:150px;background:var(--mustard);animation-delay:.5s}
+.pod.p2 .col{height:108px;background:var(--sky);animation-delay:.25s}
+.pod.p3 .col{height:76px;background:var(--pumpkin)}
+@keyframes grow{from{transform:scaleY(0)}}
+.crown-big{font-size:34px;margin-bottom:-6px;animation:bob 2.2s ease-in-out infinite}
+.fourth{display:flex;align-items:center;gap:10px;padding:12px 14px}
+.award{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:2px solid #3a2a52;font-size:15px}
+.award:last-child{border-bottom:0}
+.award span{flex:1;color:var(--muted);font-weight:700}
+.award b{font-weight:900;text-align:right}
+.float{display:flex;flex-direction:column;align-items:center}
+.float .fa{width:30px;height:30px;border-radius:9px;overflow:hidden;background:#2b1f40;border:2px solid var(--line);margin-top:-4px}
+.float .fa svg{width:100%;height:100%;display:block}
+</style>
+</head>
+<body>
+<div class="sky" aria-hidden="true">
+  <div class="stars"></div>
+  <div class="moon"></div>
+  <svg class="hills" viewBox="0 0 400 120" preserveAspectRatio="none">
+    <path d="M0 64 Q50 34 110 56 T230 50 T330 44 T400 52 V120 H0Z" fill="#2c1836"/>
+    <path d="M0 88 Q70 62 150 82 T300 76 T400 80 V120 H0Z" fill="#1c1027"/>
+  </svg>
+  <div class="leaves" id="leaves"></div>
+</div>
+
+<main id="app">
+  <section id="scr-home" class="screen hidden"></section>
+  <section id="scr-connect" class="screen hidden"></section>
+  <section id="scr-room" class="screen hidden">
+    <header class="top" id="top"></header>
+    <div id="banner"></div>
+    <div id="stage"></div>
+  </section>
+</main>
+<div class="react hidden" id="react"></div>
+<div id="sheet" class="sheet hidden"><div class="sheet-bg"></div><div class="sheet-body"></div></div>
+<div id="toasts"></div>
+<div id="fx"></div>
+
+<script src="./peerjs.min.js"></script>
+<script>
+'use strict';
+/* =========================================================
+   Ерудит — сімейна вікторина на 2–4 гравців через WebRTC (PeerJS)
+   Господар кімнати тримає стан гри й таймери, гості надсилають відповіді.
+   ========================================================= */
+
+/* ---------- utils ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const clone = (o) => JSON.parse(JSON.stringify(o));
+const rnd = (n) => Math.floor(Math.random() * n);
+const pick = (arr) => arr[rnd(arr.length)];
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('er:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('er:' + k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem('er:' + k); } catch (e) {} },
+};
+function throttle(fn, ms) {
+  let last = 0, timer = null, lastArgs;
+  return (...args) => {
+    lastArgs = args;
+    const now = Date.now();
+    if (now - last >= ms) { last = now; fn(...args); }
+    else if (!timer) timer = setTimeout(() => { timer = null; last = Date.now(); fn(...lastArgs); }, ms - (now - last));
+  };
+}
+
+
+const NICKS = ['Гарбузик', 'Кленовий Лис', 'Їжачок', 'Какао-Кіт', 'Пледик', 'Жолудь', 'Листопадик', 'Нічна Сова', 'Каштан', 'Глінтвейн', 'Шарфик', 'Грибочок'];
+const REACTIONS = ['😂', '😱', '🥰', '🤔', '🔥', '🍂'];
+
+/* ---------- questions ----------
+   [складність 1–3, категорія, питання, [правильна, хибна, хибна, хибна], «а ви знали?»] */
+const CATS = {
+  geo: ['🌍', 'Географія'], his: ['📜', 'Історія'], nat: ['🌿', 'Природа'], sci: ['🔬', 'Наука'],
+  art: ['🎨', 'Мистецтво'], lit: ['📚', 'Література'], mus: ['🎬', 'Музика й кіно'], spo: ['⚽', 'Спорт'],
+  ua: ['🇺🇦', 'Україна'], food: ['🍲', 'Їжа'], math: ['➗', 'Математика'], fun: ['🎲', 'Різне'],
+};
+const Q = [
+  // ---------- легкі ----------
+  [1, 'sci', 'Скільки днів у високосному році?', ['366', '365', '364', '360'], 'Додатковий день — 29 лютого — з’являється раз на чотири роки.'],
+  [1, 'sci', 'Яка найбільша планета Сонячної системи?', ['Юпітер', 'Сатурн', 'Нептун', 'Земля'], 'У Юпітер помістилося б понад 1300 планет розміром із Землю.'],
+  [1, 'geo', 'Столиця Франції?', ['Париж', 'Ліон', 'Марсель', 'Ніцца']],
+  [1, 'nat', 'Скільки ніг у павука?', ['8', '6', '10', '12'], 'Павуки — не комахи: у комах шість ніг, а павуки належать до павукоподібних.'],
+  [1, 'art', 'Який колір вийде, якщо змішати синю та жовту фарби?', ['Зелений', 'Фіолетовий', 'Помаранчевий', 'Коричневий']],
+  [1, 'lit', 'Хто автор «Кобзаря»?', ['Тарас Шевченко', 'Іван Франко', 'Леся Українка', 'Панас Мирний'], 'Перше видання «Кобзаря» вийшло 1840 року й мало лише вісім творів.'],
+  [1, 'ua', 'Яка найдовша річка України?', ['Дніпро', 'Дністер', 'Південний Буг', 'Десна'], 'Загальна довжина Дніпра — понад 2200 км, він тече трьома країнами.'],
+  [1, 'nat', 'Яка тварина найбільша на планеті?', ['Синій кит', 'Африканський слон', 'Кашалот', 'Жираф'], 'Синій кит може важити понад 150 тонн — більше за будь-якого динозавра.'],
+  [1, 'math', 'Скільки секунд у двох хвилинах?', ['120', '100', '200', '60']],
+  [1, 'ua', 'Яке море омиває Одесу?', ['Чорне', 'Азовське', 'Середземне', 'Балтійське']],
+  [1, 'lit', 'Як звуть дерев’яного хлопчика з книжки Карло Коллоді?', ['Піноккіо', 'Чіполліно', 'Карлсон', 'Пітер Пен'], 'Ніс Піноккіо росте щоразу, коли він каже неправду.'],
+  [1, 'sci', 'Яка планета найближча до Сонця?', ['Меркурій', 'Венера', 'Марс', 'Земля']],
+  [1, 'nat', 'Скільки кольорів у веселці за традицією?', ['7', '6', '5', '8'], 'Сім кольорів веселки «призначив» Ісаак Ньютон — за аналогією із сімома нотами.'],
+  [1, 'spo', 'Скільки гравців однієї команди одночасно грають на футбольному полі?', ['11', '10', '9', '12']],
+  [1, 'nat', 'Хто з цих тварин — ссавець?', ['Дельфін', 'Акула', 'Пінгвін', 'Крокодил'], 'Дельфіни дихають легенями й вигодовують малят молоком.'],
+  [1, 'geo', 'Столиця Італії?', ['Рим', 'Мілан', 'Венеція', 'Неаполь']],
+  [1, 'fun', 'Скільки граней у звичайного грального кубика?', ['6', '8', '4', '12'], 'Сума чисел на протилежних гранях кубика завжди дорівнює 7.'],
+  [1, 'sci', 'Що вимірює термометр?', ['Температуру', 'Тиск', 'Вологість', 'Швидкість вітру']],
+  [1, 'ua', 'Яке місто України найбільше за кількістю мешканців?', ['Київ', 'Харків', 'Одеса', 'Дніпро']],
+  [1, 'art', 'Хто намалював «Мону Лізу»?', ['Леонардо да Вінчі', 'Мікеланджело', 'Рафаель', 'Вінсент ван Гог'], '«Мону Лізу» викрали з Лувру 1911 року, і її не було два роки.'],
+  [1, 'fun', 'Який птах вважається символом миру?', ['Голуб', 'Лелека', 'Ластівка', 'Сова']],
+  [1, 'geo', 'Яка гора найвища у світі?', ['Еверест', 'К2', 'Монблан', 'Кіліманджаро'], 'Висота Евересту — близько 8849 м, і він досі потроху «росте».'],
+  [1, 'lit', 'До кого несла пиріжки Червона Шапочка?', ['До бабусі', 'До мами', 'До тітки', 'До подруги']],
+  [1, 'geo', 'Який океан найбільший?', ['Тихий', 'Атлантичний', 'Індійський', 'Північний Льодовитий'], 'Тихий океан більший за всю суходільну площу Землі разом узяту.'],
+  [1, 'geo', 'Столиця Польщі?', ['Варшава', 'Краків', 'Гданськ', 'Вроцлав']],
+  [1, 'ua', 'Яке свято в Україні відзначають 25 грудня?', ['Різдво', 'Великдень', 'Трійцю', 'Новий рік'], 'Від 2023 року Різдво в Україні офіційно святкують 25 грудня.'],
+  [1, 'math', 'Скільки кілограмів в одній тонні?', ['1000', '100', '10 000', '500']],
+  [1, 'lit', 'Хто написав книжки про Гаррі Поттера?', ['Джоан Роулінг', 'Джон Толкін', 'Стівен Кінг', 'Агата Крісті'], 'Першу книжку про Гаррі Поттера відхилили понад десять видавництв.'],
+  [1, 'mus', 'Як звуть знамениту мишку з мультфільмів Disney?', ['Міккі', 'Джеррі', 'Стюарт', 'Спіді']],
+  [1, 'geo', 'Яка країна за формою схожа на чобіт?', ['Італія', 'Іспанія', 'Греція', 'Португалія']],
+  [1, 'nat', 'Яка тварина найшвидша на суші?', ['Гепард', 'Лев', 'Антилопа', 'Кінь'], 'Гепард розганяється до 100 км/год приблизно за 3 секунди.'],
+  [1, 'nat', 'Чим переважно харчуються панди?', ['Бамбуком', 'Евкаліптом', 'Рибою', 'Ягодами'], 'Панда може з’їсти понад 20 кг бамбука за день.'],
+  [1, 'sci', 'Яка хімічна формула води?', ['H₂O', 'CO₂', 'O₂', 'NaCl']],
+  [1, 'sci', 'Як називається вчений, що вивчає зорі й планети?', ['Астроном', 'Астролог', 'Геолог', 'Метеоролог']],
+  [1, 'sci', 'Що ми помічаємо першим під час грози?', ['Блискавку', 'Грім', 'Їх одночасно', 'Залежить від погоди'], 'Світло летить майже в мільйон разів швидше за звук. За паузою до грому можна оцінити відстань: 3 секунди ≈ 1 км.'],
+  [1, 'nat', 'Скільки ніг у комахи?', ['6', '8', '4', '10']],
+  [1, 'ua', 'Яке місто називають «містом Лева»?', ['Львів', 'Луцьк', 'Ужгород', 'Чернівці'], 'Львів назвали на честь Лева — сина короля Данила Галицького.'],
+  [1, 'ua', 'Яка гора найвища в Україні?', ['Говерла', 'Піп Іван', 'Петрос', 'Ай-Петрі'], 'Висота Говерли — 2061 м.'],
+  [1, 'lit', 'Хто написав драму-феєрію «Лісова пісня»?', ['Леся Українка', 'Ольга Кобилянська', 'Марко Вовчок', 'Ліна Костенко'], 'Леся Українка написала «Лісову пісню» менш ніж за два тижні.'],
+  [1, 'fun', 'Скільки клітинок на шаховій дошці?', ['64', '81', '49', '100']],
+  [1, 'sci', 'Яку планету називають Червоною?', ['Марс', 'Венера', 'Юпітер', 'Меркурій'], 'Червоний колір Марсу дає іржа — оксид заліза в його ґрунті.'],
+  [1, 'ua', 'У якому році Україна проголосила незалежність?', ['1991', '1990', '1989', '1996']],
+  [1, 'sci', 'Хто першим ступив на Місяць?', ['Ніл Армстронг', 'Базз Олдрін', 'Юрій Гагарін', 'Майкл Коллінз']],
+  [1, 'spo', 'Скільки триває основний час футбольного матчу?', ['90 хвилин', '80 хвилин', '100 хвилин', '120 хвилин']],
+  [1, 'spo', 'Скільки кілець на олімпійському прапорі?', ['5', '4', '6', '7']],
+  [1, 'sci', 'Скільки планет у Сонячній системі?', ['8', '9', '7', '10'], 'Плутон «розжалували» до карликових планет 2006 року.'],
+  [1, 'lit', 'Хто автор «Ромео і Джульєтти»?', ['Вільям Шекспір', 'Чарльз Діккенс', 'Віктор Гюго', 'Йоганн Гете']],
+  [1, 'his', 'Хто очолив національно-визвольну війну 1648 року?', ['Богдан Хмельницький', 'Іван Мазепа', 'Петро Сагайдачний', 'Іван Виговський']],
+  [1, 'his', 'Хто був першим Президентом незалежної України?', ['Леонід Кравчук', 'Леонід Кучма', 'Віктор Ющенко', 'Михайло Грушевський']],
+  [1, 'math', 'Скільки градусів у прямому куті?', ['90', '180', '45', '60']],
+  [1, 'math', 'Скільки буде 7 × 8?', ['56', '54', '64', '48']],
+  [1, 'math', 'Чому приблизно дорівнює число π?', ['3,14', '2,71', '1,61', '3,41'], '14 березня (3.14) у світі відзначають День числа π.'],
+  [1, 'sci', 'Хто відкрив закон всесвітнього тяжіння?', ['Ісаак Ньютон', 'Галілео Галілей', 'Альберт Ейнштейн', 'Йоганн Кеплер']],
+  [1, 'spo', 'Олександр Усик — чемпіон світу з…', ['боксу', 'боротьби', 'тенісу', 'плавання']],
+  [1, 'spo', 'Еліна Світоліна — зірка якого виду спорту?', ['Тенісу', 'Гімнастики', 'Фехтування', 'Бадмінтону']],
+  [1, 'fun', 'Яка шахова фігура ходить буквою «Г»?', ['Кінь', 'Слон', 'Тура', 'Ферзь']],
+  [1, 'mus', 'Хто зіграв Джека у фільмі «Титанік»?', ['Леонардо Ді Капріо', 'Бред Пітт', 'Том Круз', 'Джонні Депп']],
+  [1, 'mus', 'Як звуть сніговика з мультфільму «Крижане серце»?', ['Олаф', 'Свен', 'Крістофф', 'Ганс']],
+  [1, 'mus', 'Хто з них НЕ черепашка-ніндзя?', ['Пікассо', 'Леонардо', 'Рафаель', 'Донателло'], 'Четверта черепашка — Мікеланджело. Усіх назвали на честь художників Відродження.'],
+  [1, 'mus', 'Який гурт виконує «Bohemian Rhapsody»?', ['Queen', 'The Beatles', 'ABBA', 'The Rolling Stones']],
+  [1, 'mus', 'Скільки учасників було в The Beatles?', ['4', '3', '5', '6']],
+  [1, 'mus', 'Хто лідер гурту «Океан Ельзи»?', ['Святослав Вакарчук', 'Олег Скрипка', 'Тарас Тополя', 'Андрій Хливнюк']],
+  [1, 'mus', 'Як звуть жовтошкіру мультяшну родину зі Спрінгфілда?', ['Сімпсони', 'Гріффіни', 'Флінстоуни', 'Белчери']],
+  [1, 'lit', 'Хто автор оповідань про Шерлока Голмса?', ['Артур Конан Дойл', 'Агата Крісті', 'Едгар По', 'Чарльз Діккенс']],
+  [1, 'nat', 'Чим дихають риби?', ['Зябрами', 'Легенями', 'Шкірою', 'Плавцями']],
+  [1, 'nat', 'Хто з цих тварин спить вниз головою?', ['Кажан', 'Сова', 'Білка', 'Їжак']],
+  [1, 'nat', 'Яке дерево дає жолуді?', ['Дуб', 'Бук', 'Каштан', 'Клен']],
+  [1, 'nat', 'Який птах підкидає яйця в чужі гнізда?', ['Зозуля', 'Сорока', 'Шпак', 'Сойка']],
+  [1, 'nat', 'Який птах найбільший у світі?', ['Страус', 'Кондор', 'Альбатрос', 'Пелікан'], 'Одне страусине яйце за масою — як два десятки курячих.'],
+  [1, 'nat', 'Який птах не вміє літати?', ['Ківі', 'Ластівка', 'Горобець', 'Сокіл']],
+  [1, 'ua', 'Що зображено на гербі України?', ['Тризуб', 'Лев', 'Орел', 'Сокіл']],
+  [1, 'ua', 'У якому місті є знамениті Потьомкінські сходи?', ['Одеса', 'Київ', 'Херсон', 'Миколаїв']],
+  [1, 'ua', 'Острів Хортиця розташований на річці…', ['Дніпро', 'Дністер', 'Дунай', 'Десна'], 'Хортиця — найбільший острів на Дніпрі та колиска запорозького козацтва.'],
+  [1, 'food', 'Який овоч дає борщу червоний колір?', ['Буряк', 'Помідор', 'Морква', 'Перець']],
+  [1, 'food', 'У якій країні вигадали піцу?', ['Італія', 'Греція', 'Франція', 'США']],
+  [1, 'food', 'Батьківщина суші?', ['Японія', 'Китай', 'Корея', 'Таїланд']],
+  [1, 'ua', 'Скільки страв традиційно готують на Святвечір?', ['12', '7', '10', '3']],
+  [1, 'ua', 'Яка головна страва Святвечора?', ['Кутя', 'Борщ', 'Вареники', 'Голубці']],
+  [1, 'ua', 'Яку квітку шукають у ніч на Івана Купала?', ['Квітку папороті', 'Ромашку', 'Лілію', 'Калину']],
+  [1, 'ua', 'Гопак — це…', ['Танець', 'Страва', 'Головний убір', 'Музичний інструмент']],
+  [1, 'ua', 'Що таке писанка?', ['Розписане яйце', 'Вишитий рушник', 'Народна пісня', 'Святковий хліб']],
+  [1, 'mus', 'На якому інструменті грали кобзарі?', ['Кобза й бандура', 'Скрипка', 'Цимбали', 'Сопілка']],
+  [1, 'mus', 'Скільки струн у класичній гітарі?', ['6', '4', '7', '12']],
+  [1, 'mus', 'Хто живе в ананасі на дні океану?', ['Губка Боб', 'Немо', 'Русалонька', 'Патрік']],
+  [1, 'lit', 'Як звуть ведмедика, який дуже любить мед?', ['Вінні-Пух', 'Паддінгтон', 'Балу', 'Умка']],
+  [1, 'fun', 'Скільки штатів у США?', ['50', '48', '52', '51']],
+  [1, 'geo', 'У якій країні Тадж-Махал?', ['Індія', 'Пакистан', 'Іран', 'Туреччина']],
+  [1, 'sci', 'Хто автор теорії відносності?', ['Альберт Ейнштейн', 'Ісаак Ньютон', 'Нільс Бор', 'Стівен Гокінг']],
+  [1, 'fun', 'Хто з них — співзасновник Microsoft?', ['Білл Гейтс', 'Стів Джобс', 'Марк Цукерберг', 'Джефф Безос']],
+  [1, 'spo', 'Брати Віталій і Володимир Клички — це…', ['боксери', 'футболісти', 'тенісисти', 'хокеїсти']],
+  [1, 'his', 'Як називалася козацька фортеця за порогами Дніпра?', ['Запорозька Січ', 'Київська фортеця', 'Хотинська фортеця', 'Галицький замок']],
+  [1, 'math', 'Чому дорівнює сума кутів трикутника?', ['180°', '360°', '90°', '270°']],
+  [1, 'food', 'З чого роблять сир?', ['З молока', 'Із соєвого борошна', 'З яєць', 'З вершкового масла']],
+
+  // ---------- середні ----------
+  [2, 'fun', 'Скільки місяців у році мають 31 день?', ['7', '6', '5', '8'], 'Це січень, березень, травень, липень, серпень, жовтень і грудень.'],
+  [2, 'sci', 'Скільки зубів у дорослої людини разом із зубами мудрості?', ['32', '28', '30', '36']],
+  [2, 'ua', 'Скільки літер в українській абетці?', ['33', '32', '31', '34']],
+  [2, 'nat', 'Скільки сердець у восьминога?', ['3', '1', '2', '8'], 'Два серця качають кров через зябра, третє — по всьому тілу.'],
+  [2, 'sci', 'Хто 1876 року запатентував телефон?', ['Александер Белл', 'Томас Едісон', 'Нікола Тесла', 'Гульєльмо Марконі']],
+  [2, 'geo', 'Яка країна друга у світі за площею?', ['Канада', 'США', 'Китай', 'Бразилія']],
+  [2, 'sci', 'Який метал рідкий за кімнатної температури?', ['Ртуть', 'Олово', 'Свинець', 'Алюміній']],
+  [2, 'sci', 'Скільки кісток у скелеті дорослої людини?', ['206', '186', '226', '306'], 'Немовля народжується майже з 300 кістками — частина з них потім зростається.'],
+  [2, 'his', 'Яка країна подарувала США Статую Свободи?', ['Франція', 'Велика Британія', 'Іспанія', 'Нідерланди'], 'Каркас статуї сконструював Гюстав Ейфель — той самий, що збудував Ейфелеву вежу.'],
+  [2, 'ua', 'Скільки областей в Україні?', ['24', '25', '23', '27'], 'Плюс Автономна Республіка Крим і два міста з особливим статусом — Київ і Севастополь.'],
+  [2, 'his', 'Хто першим полетів у космос?', ['Юрій Гагарін', 'Ніл Армстронг', 'Герман Тітов', 'Олексій Леонов']],
+  [2, 'ua', 'Як звали першого астронавта незалежної України, що полетів на шатлі «Колумбія» 1997 року?', ['Леонід Каденюк', 'Павло Попович', 'Георгій Береговий', 'Віталій Жолобов']],
+  [2, 'geo', 'Яка найбільша жарка пустеля світу?', ['Сахара', 'Гобі', 'Калахарі', 'Аравійська'], 'Найбільша пустеля взагалі — Антарктида: пустеля визначається кількістю опадів, а не спекою.'],
+  [2, 'spo', 'Скільки гравців однієї команди на волейбольному майданчику?', ['6', '5', '7', '9']],
+  [2, 'spo', 'Яке місто приймало Олімпійські ігри 2024 року?', ['Париж', 'Лос-Анджелес', 'Токіо', 'Лондон']],
+  [2, 'mus', 'Який великий композитор втратив слух, але продовжував писати музику?', ['Людвіг ван Бетховен', 'Вольфганг Амадей Моцарт', 'Йоганн Себастьян Бах', 'Фридерик Шопен']],
+  [2, 'lit', 'Хто автор «Енеїди» — першого твору новою українською літературною мовою?', ['Іван Котляревський', 'Тарас Шевченко', 'Григорій Сковорода', 'Григорій Квітка-Основ’яненко']],
+  [2, 'geo', 'Яка країна найбільша у світі за кількістю населення?', ['Індія', 'Китай', 'США', 'Індонезія'], 'Індія обігнала Китай 2023 року.'],
+  [2, 'geo', 'Яка столиця Австралії?', ['Канберра', 'Сідней', 'Мельбурн', 'Перт'], 'Канберру збудували спеціально як компроміс між Сіднеєм і Мельбурном.'],
+  [2, 'geo', 'Яка столиця Канади?', ['Оттава', 'Торонто', 'Монреаль', 'Ванкувер']],
+  [2, 'geo', 'Яка столиця Туреччини?', ['Анкара', 'Стамбул', 'Ізмір', 'Анталія']],
+  [2, 'geo', 'Яка найменша країна світу?', ['Ватикан', 'Монако', 'Сан-Марино', 'Ліхтенштейн'], 'Площа Ватикану — менше половини квадратного кілометра.'],
+  [2, 'sci', 'Який хімічний символ золота?', ['Au', 'Ag', 'Go', 'Zn'], 'Au — від латинського aurum.'],
+  [2, 'sci', 'Яка природна речовина найтвердіша?', ['Алмаз', 'Граніт', 'Кварц', 'Залізо']],
+  [2, 'art', 'Хто намалював «Запорожці пишуть листа турецькому султанові»?', ['Ілля Рєпін', 'Іван Айвазовський', 'Архип Куїнджі', 'Микола Пимоненко'], 'Рєпін народився в Чугуєві на Харківщині й працював над картиною понад десять років.'],
+  [2, 'mus', 'Хто створив «Щедрик», який світ знає як Carol of the Bells?', ['Микола Леонтович', 'Микола Лисенко', 'Кирило Стеценко', 'Левко Ревуцький']],
+  [2, 'mus', 'Хто переміг на Євробаченні 2004 року з «Wild Dances»?', ['Руслана', 'Джамала', 'Верка Сердючка', 'Ані Лорак']],
+  [2, 'mus', 'Який гурт переміг на Євробаченні-2022 з піснею «Стефанія»?', ['Kalush Orchestra', 'Go_A', 'ДахаБраха', 'Бумбокс']],
+  [2, 'mus', 'Скільки козаків у мультфільмі «Як козаки…»?', ['3', '2', '4', '5'], 'Їх звуть Грай, Тур і Око. Серіал створила студія «Київнаукфільм».'],
+  [2, 'sci', 'Чим уславився киянин Ігор Сікорський?', ['Сконструював перший серійний гелікоптер', 'Першим полетів у космос', 'Винайшов радіо', 'Відкрив пеніцилін']],
+  [2, 'nat', 'Скільки камер у шлунку корови?', ['4', '1', '2', '3']],
+  [2, 'sci', 'Який орган людського тіла найбільший?', ['Шкіра', 'Печінка', 'Легені', 'Мозок']],
+  [2, 'sci', 'Скільки хромосом у клітинах людини?', ['46', '23', '44', '48']],
+  [2, 'geo', 'Яке озеро найглибше у світі?', ['Байкал', 'Танганьїка', 'Верхнє', 'Вікторія']],
+  [2, 'geo', 'Як називається найглибше місце Світового океану?', ['Маріанська западина', 'Бермудський трикутник', 'Яванський жолоб', 'Мексиканська затока'], 'Глибина там — майже 11 км. Еверест сховався б із запасом понад 2 км.'],
+  [2, 'food', 'Де батьківщина картоплі?', ['Південна Америка', 'Європа', 'Азія', 'Африка']],
+  [2, 'food', 'Основний інгредієнт гуакамоле?', ['Авокадо', 'Помідор', 'Огірок', 'Квасоля']],
+  [2, 'food', 'З чого роблять тофу?', ['Із сої', 'З рису', 'З нуту', 'З коров’ячого молока']],
+  [2, 'food', 'Яка спеція найдорожча у світі?', ['Шафран', 'Ваніль', 'Кардамон', 'Кориця'], 'Шафран — це висушені маточки крокусу, їх збирають вручну.'],
+  [2, 'sci', 'Як називається страх перед павуками?', ['Арахнофобія', 'Клаустрофобія', 'Агорафобія', 'Акрофобія']],
+  [2, 'geo', 'Які гори вважають умовною межею між Європою та Азією?', ['Уральські', 'Карпати', 'Альпи', 'Піренеї']],
+  [2, 'geo', 'Який канал з’єднує Середземне та Червоне моря?', ['Суецький', 'Панамський', 'Кільський', 'Коринфський']],
+  [2, 'geo', 'У якій країні Мачу-Пікчу?', ['Перу', 'Мексика', 'Чилі', 'Болівія']],
+  [2, 'fun', 'Скільки зірок на прапорі Європейського Союзу?', ['12', '15', '27', '10'], 'Кількість зірок не залежить від кількості країн: 12 — символ єдності й довершеності.'],
+  [2, 'art', 'Хто намалював «Зоряну ніч»?', ['Вінсент ван Гог', 'Клод Моне', 'Пабло Пікассо', 'Сальвадор Далі']],
+  [2, 'lit', 'Хто написав «Тіні забутих предків»?', ['Михайло Коцюбинський', 'Іван Франко', 'Ольга Кобилянська', 'Василь Стефаник']],
+  [2, 'lit', 'Хто автор повісті «Кайдашева сім’я»?', ['Іван Нечуй-Левицький', 'Панас Мирний', 'Марко Вовчок', 'Михайло Старицький']],
+  [2, 'lit', 'Хто написав повість «Захар Беркут»?', ['Іван Франко', 'Тарас Шевченко', 'Пантелеймон Куліш', 'Борис Грінченко']],
+  [2, 'his', 'Хто очолював Українську Центральну Раду?', ['Михайло Грушевський', 'Симон Петлюра', 'Володимир Винниченко', 'Павло Скоропадський']],
+  [2, 'his', 'Який князь хрестив Русь 988 року?', ['Володимир Великий', 'Ярослав Мудрий', 'Святослав', 'Ігор']],
+  [2, 'math', 'Що більше: 2¹⁰ чи 1000?', ['2¹⁰', '1000', 'Однаково', 'Порівняти неможливо'], '2¹⁰ = 1024. Тому в кілобайті колись рахували 1024 байти.'],
+  [2, 'math', 'Скільки нулів у записі числа «мільярд»?', ['9', '6', '12', '8']],
+  [2, 'math', 'Яке найменше просте число?', ['2', '1', '3', '0'], 'Двійка — єдине парне просте число.'],
+  [2, 'math', 'Яке число позначає римська цифра L?', ['50', '100', '500', '5']],
+  [2, 'sci', 'Хто відкрив пеніцилін?', ['Александер Флемінг', 'Луї Пастер', 'Роберт Кох', 'Ілля Мечников'], 'Флемінг помітив, що пліснява «з’їла» бактерії в забутій чашці Петрі.'],
+  [2, 'sci', 'Яка приблизно швидкість світла?', ['300 000 км/с', '30 000 км/с', '3 000 000 км/с', '1 000 км/с']],
+  [2, 'sci', 'Якого газу найбільше в повітрі?', ['Азоту', 'Кисню', 'Вуглекислого газу', 'Аргону'], 'Азоту в повітрі близько 78 %, кисню — лише 21 %.'],
+  [2, 'spo', 'Яка приблизно довжина марафонської дистанції?', ['42 км', '21 км', '50 км', '36 км'], 'Точна дистанція — 42,195 км.'],
+  [2, 'spo', 'У якій дисципліні Сергій Бубка встановив 35 світових рекордів?', ['Стрибки з жердиною', 'Біг на 100 м', 'Метання списа', 'Стрибки у висоту']],
+  [2, 'spo', 'Яка українка стала олімпійською чемпіонкою 2024 року зі стрибків у висоту?', ['Ярослава Магучіх', 'Ольга Харлан', 'Юлія Левченко', 'Ірина Геращенко']],
+  [2, 'spo', 'Скільки очок у баскетболі дає влучний кидок з-за дуги?', ['3', '2', '4', '1']],
+  [2, 'spo', 'У якому місті відбувся фінал Євро-2012?', ['Київ', 'Варшава', 'Львів', 'Донецьк']],
+  [2, 'spo', 'Тренером якого клубу був легендарний Валерій Лобановський?', ['«Динамо» Київ', '«Шахтар»', '«Карпати»', '«Дніпро»']],
+  [2, 'spo', 'Скільки гравців однієї команди на льоду в хокеї разом із воротарем?', ['6', '5', '7', '11']],
+  [2, 'mus', 'Хто написав пісню «Червона рута»?', ['Володимир Івасюк', 'Микола Лисенко', 'Олександр Білаш', 'Ігор Поклад']],
+  [2, 'mus', 'З якої країни гурт ABBA?', ['Швеція', 'Норвегія', 'Данія', 'Фінляндія']],
+  [2, 'mus', 'Хто режисер «Парку Юрського періоду»?', ['Стівен Спілберг', 'Джеймс Кемерон', 'Джордж Лукас', 'Крістофер Нолан']],
+  [2, 'lit', 'Хто автор «Маленького принца»?', ['Антуан де Сент-Екзюпері', 'Жуль Верн', 'Ганс Крістіан Андерсен', 'Віктор Гюго'], 'Сент-Екзюпері був льотчиком і сам намалював ілюстрації до книжки.'],
+  [2, 'lit', 'Хто написав «Тараса Бульбу»?', ['Микола Гоголь', 'Тарас Шевченко', 'Іван Котляревський', 'Пантелеймон Куліш'], 'Гоголь народився на Полтавщині, у Великих Сорочинцях.'],
+  [2, 'nat', 'Хто з цих тварин — земноводне?', ['Жаба', 'Ящірка', 'Змія', 'Черепаха']],
+  [2, 'nat', 'Яка з цих рослин — хижа й росте в Україні?', ['Росичка', 'Конвалія', 'Ромашка', 'Папороть'], 'Росичка ловить комах липкими краплями на листочках.'],
+  [2, 'nat', 'Чому восени жовтіє листя?', ['Руйнується зелений хлорофіл', 'Листя підмерзає', 'Його обпікає сонце', 'Дерево перестає пити воду'], 'Жовті й помаранчеві барви були в листку весь час — їх просто ховав зелений хлорофіл.'],
+  [2, 'fun', 'Скільки карт у стандартній колоді без джокерів?', ['52', '36', '54', '48']],
+  [2, 'ua', 'Хто автор музики Державного гімну України?', ['Михайло Вербицький', 'Павло Чубинський', 'Микола Лисенко', 'Микола Леонтович'], 'Слова гімну написав Павло Чубинський, а музику — священник Михайло Вербицький.'],
+  [2, 'ua', 'У якій області Кам’янець-Подільська фортеця?', ['Хмельницькій', 'Вінницькій', 'Тернопільській', 'Чернівецькій']],
+  [2, 'ua', 'Яке місто раніше називалося Катеринославом?', ['Дніпро', 'Кропивницький', 'Запоріжжя', 'Херсон']],
+  [2, 'ua', 'Яка з цих країн НЕ межує з Україною?', ['Чехія', 'Словаччина', 'Угорщина', 'Молдова']],
+  [2, 'food', 'Що таке паелья?', ['Іспанська страва з рису', 'Італійський сир', 'Французький десерт', 'Грецький салат']],
+  [2, 'sci', 'Що вимірюють у калоріях?', ['Енергію', 'Масу', 'Об’єм', 'Температуру']],
+  [2, 'lit', 'Кого традиційно вважають автором «Повісті минулих літ»?', ['Нестора Літописця', 'Іларіона Київського', 'Ярослава Мудрого', 'Петра Могилу']],
+  [2, 'geo', 'Яка гора найвища в Африці?', ['Кіліманджаро', 'Кенія', 'Тубкаль', 'Еверест']],
+  [2, 'geo', 'Який найбільший острів у світі?', ['Гренландія', 'Мадагаскар', 'Нова Гвінея', 'Велика Британія']],
+  [2, 'geo', 'Яка столиця Ісландії?', ['Рейк’явік', 'Осло', 'Гельсінкі', 'Копенгаген']],
+  [2, 'geo', 'Яка річка найдовша в Європі?', ['Волга', 'Дунай', 'Дніпро', 'Рейн']],
+  [2, 'sci', 'Як звали собаку, що першою облетіла Землю на орбіті?', ['Лайка', 'Білка', 'Стрілка', 'Жучка']],
+  [2, 'sci', 'Хто склав періодичну таблицю хімічних елементів?', ['Дмитро Менделєєв', 'Михайло Ломоносов', 'Нільс Бор', 'Марія Кюрі']],
+  [2, 'sci', 'У яких одиницях вимірюють силу струму?', ['Амперах', 'Вольтах', 'Омах', 'Ватах']],
+  [2, 'sci', 'У якому році людина вперше ступила на Місяць?', ['1969', '1961', '1975', '1957']],
+  [2, 'his', 'У якому році почалася Друга світова війна?', ['1939', '1941', '1914', '1945']],
+  [2, 'his', 'Який гетьман уклав союз зі шведським королем Карлом XII?', ['Іван Мазепа', 'Богдан Хмельницький', 'Петро Дорошенко', 'Іван Самойлович']],
+  [2, 'his', 'Ким був Григорій Сковорода?', ['Філософом і поетом', 'Гетьманом', 'Художником', 'Композитором'], 'На його надгробку написано: «Світ ловив мене, та не спіймав».'],
+  [2, 'art', 'Марія Примаченко — це…', ['художниця', 'співачка', 'поетеса', 'науковиця'], 'ЮНЕСКО оголосило 2009 рік роком Марії Примаченко.'],
+  [2, 'lit', 'Яке справжнє ім’я Лесі Українки?', ['Лариса Косач', 'Ольга Драгоманова', 'Марія Вілінська', 'Ольга Кобилянська'], 'Ольга Драгоманова — її мама, письменниця з псевдонімом Олена Пчілка.'],
+  [2, 'art', 'Хто намалював «Дев’ятий вал»?', ['Іван Айвазовський', 'Архип Куїнджі', 'Іван Шишкін', 'Ісаак Левітан']],
+  [2, 'mus', 'Що таке трембіта?', ['Довга дерев’яна труба', 'Струнний інструмент', 'Барабан', 'Гуцульський танець'], 'Трембіта буває до 4 метрів завдовжки — її звук чути за десяток кілометрів.'],
+  [2, 'sci', 'Скільки відсотків тіла дорослої людини становить вода?', ['Близько 60 %', 'Близько 30 %', 'Близько 90 %', 'Близько 45 %']],
+  [2, 'sci', 'За скільки часу Місяць робить повний оберт навколо Землі?', ['Приблизно за місяць', 'За тиждень', 'За рік', 'За добу']],
+  [2, 'fun', 'Що означають літери «www» в адресах сайтів?', ['World Wide Web', 'World Web Window', 'Wide Web World', 'Web Wire Work']],
+
+  // ---------- складні ----------
+  [3, 'sci', 'Яка група крові вважається універсальною донорською?', ['Перша, резус-негативна', 'Четверта, резус-позитивна', 'Друга, резус-негативна', 'Третя, резус-позитивна']],
+  [3, 'nat', 'Як називається наука про гриби?', ['Мікологія', 'Ботаніка', 'Орнітологія', 'Ентомологія']],
+  [3, 'sci', 'Яка планета обертається, ніби «лежачи на боці»?', ['Уран', 'Нептун', 'Сатурн', 'Венера'], 'Вісь Урана нахилена майже на 98°, тож його полюси по черзі «дивляться» на Сонце.'],
+  [3, 'sci', 'На якій планеті доба довша за рік?', ['Венера', 'Меркурій', 'Марс', 'Юпітер'], 'Венера обертається навколо осі за 243 земні доби, а навколо Сонця — за 225.'],
+  [3, 'sci', 'Яка планета найгарячіша в Сонячній системі?', ['Венера', 'Меркурій', 'Марс', 'Юпітер'], 'Меркурій ближчий до Сонця, але густа атмосфера Венери тримає жар: там понад 460 °C.'],
+  [3, 'food', 'Яка країна вважається батьківщиною кави?', ['Ефіопія', 'Бразилія', 'Колумбія', 'Італія'], 'За легендою, пастух Калді помітив, що його кози бадьорі після ягід кавового дерева.'],
+  [3, 'food', 'Що з цього з погляду ботаніки НЕ ягода?', ['Полуниця', 'Банан', 'Помідор', 'Виноград'], 'Банан і помідор — ягоди, а полуниця — «несправжній плід»: її насіння сидить ззовні.'],
+  [3, 'ua', 'Яке природне озеро найбільше в Україні?', ['Ялпуг', 'Світязь', 'Синевир', 'Кагул'], 'Ялпуг на Одещині — найбільше, а Світязь — одне з найглибших.'],
+  [3, 'ua', 'Скільки країн межують з Україною суходолом?', ['7', '5', '6', '8'], 'Польща, Словаччина, Угорщина, Румунія, Молдова, Білорусь і росія.'],
+  [3, 'ua', 'У якому році ЮНЕСКО внесло культуру приготування українського борщу до списку нематеріальної спадщини?', ['2022', '2019', '2015', '2023']],
+  [3, 'ua', 'У якій області розташовані Шацькі озера?', ['Волинській', 'Рівненській', 'Львівській', 'Житомирській']],
+  [3, 'his', 'Яке місто було столицею Радянської України до 1934 року?', ['Харків', 'Київ', 'Полтава', 'Одеса']],
+  [3, 'his', 'У якому році створено Конституцію Пилипа Орлика?', ['1710', '1654', '1775', '1648'], 'Її називають однією з перших конституцій Європи.'],
+  [3, 'art', 'Хто архітектор Андріївської церкви в Києві?', ['Бартоломео Растреллі', 'Іван Григорович-Барський', 'Андрій Меленський', 'Владислав Городецький']],
+  [3, 'art', 'Хто звів у Києві «Будинок з химерами»?', ['Владислав Городецький', 'Бартоломео Растреллі', 'Вікентій Беретті', 'Андрій Меленський'], 'Городецький був пристрасним мисливцем, тому будинок прикрашають скульптури звірів.'],
+  [3, 'math', 'Скільки граней у додекаедра?', ['12', '10', '20', '8']],
+  [3, 'sci', 'Скільки приблизно летить світло від Сонця до Землі?', ['8 хвилин', '8 секунд', '1 годину', '1 добу']],
+  [3, 'sci', 'Який хімічний елемент найпоширеніший у Всесвіті?', ['Водень', 'Гелій', 'Кисень', 'Вуглець']],
+  [3, 'spo', 'У якому році Андрій Шевченко отримав «Золотий м’яч»?', ['2004', '2000', '2008', '2006']],
+  [3, 'spo', 'Скільки сетів можна зіграти максимум у чоловічому матчі турніру Великого шолома?', ['5', '3', '4', '7']],
+  [3, 'fun', 'У якій країні, як вважається, вигадали шахи?', ['Індія', 'Китай', 'Персія', 'Греція'], 'Прабатько шахів — індійська гра чатуранга.'],
+  [3, 'mus', 'Скільки «Оскарів» отримав фільм «Титанік»?', ['11', '9', '7', '14'], 'Це рекорд, який із «Титаніком» поділяють лише «Бен-Гур» і «Повернення короля».'],
+  [3, 'mus', 'Хто написав музику до «Пісні про рушник»?', ['Платон Майборода', 'Володимир Івасюк', 'Олександр Білаш', 'Микола Лисенко'], 'Слова написав Андрій Малишко.'],
+  [3, 'mus', 'Хто автор опери «Запорожець за Дунаєм»?', ['Семен Гулак-Артемовський', 'Микола Лисенко', 'Микола Леонтович', 'Михайло Вербицький']],
+  [3, 'mus', 'Скільки клавіш у стандартного фортепіано?', ['88', '76', '64', '100'], '52 білі й 36 чорних.'],
+  [3, 'lit', 'Як звали коня Дон Кіхота?', ['Росінант', 'Буцефал', 'Пегас', 'Сірко']],
+  [3, 'lit', 'Хто автор «Слова о полку Ігоревім»?', ['Невідомо', 'Нестор Літописець', 'Митрополит Іларіон', 'Віщий Боян'], 'Ім’я автора не збереглося, хоча науковці висунули десятки версій.'],
+  [3, 'lit', 'Хто написав роман «Тигролови»?', ['Іван Багряний', 'Олесь Гончар', 'Микола Хвильовий', 'Валер’ян Підмогильний']],
+  [3, 'lit', 'Хто написав роман «Чорна рада»?', ['Пантелеймон Куліш', 'Іван Франко', 'Марко Вовчок', 'Михайло Старицький'], 'Це перший історичний роман українською мовою.'],
+  [3, 'lit', 'Кому належав псевдонім Марко Вовчок?', ['Марії Вілінській', 'Ользі Кобилянській', 'Ларисі Косач', 'Ганні Барвінок']],
+  [3, 'art', 'Хто написав картину «Місячна ніч на Дніпрі»?', ['Архип Куїнджі', 'Іван Айвазовський', 'Ілля Рєпін', 'Микола Пимоненко'], 'Картину показували в темній залі з єдиним променем світла — глядачі шукали за полотном лампу.'],
+  [3, 'geo', 'Яка столиця Нової Зеландії?', ['Веллінгтон', 'Окленд', 'Крайстчерч', 'Сідней']],
+  [3, 'geo', 'Яка столиця Бразилії?', ['Бразиліа', 'Ріо-де-Жанейро', 'Сан-Паулу', 'Сальвадор']],
+  [3, 'geo', 'Як називається найвищий водоспад світу?', ['Анхель', 'Ніагарський', 'Вікторія', 'Ігуасу'], 'Вода Анхеля падає майже з кілометрової висоти й часто розвіюється туманом, не долетівши до низу.'],
+  [3, 'sci', 'Яка найменша кістка в тілі людини?', ['Стремінце у вусі', 'Фаланга мізинця', 'Куприк', 'Колінна чашечка']],
+  [3, 'sci', 'Скільки Нобелівських премій отримала Марія Склодовська-Кюрі?', ['2', '1', '3', '0'], 'Вона єдина, хто отримав Нобелівські премії у двох різних науках — фізиці та хімії.'],
+  [3, 'his', 'У якому році впала Берлінська стіна?', ['1989', '1991', '1986', '1990']],
+  [3, 'sci', 'Де народився ракетобудівник Сергій Корольов?', ['У Житомирі', 'В Одесі', 'У Києві', 'У Харкові']],
+  [3, 'geo', 'Яка країна має найбільше часових поясів (разом із заморськими територіями)?', ['Франція', 'росія', 'США', 'Велика Британія'], 'Завдяки заморським територіям у Франції 12 часових поясів.'],
+  [3, 'geo', 'Яка приблизно довжина екватора Землі?', ['40 000 км', '20 000 км', '60 000 км', '100 000 км']],
+  [3, 'geo', 'Яке озеро найбільше у світі за площею?', ['Каспійське море', 'Верхнє', 'Байкал', 'Вікторія'], 'Каспій називають морем, але формально це найбільше у світі озеро.'],
+  [3, 'geo', 'Через скільки країн тече Дунай?', ['10', '6', '8', '12'], 'Це рекорд серед річок світу.'],
+  [3, 'his', 'Скільки років тривала Столітня війна?', ['116', '100', '99', '150'], 'Вона тривала з 1337 до 1453 року з перервами.'],
+  [3, 'sci', 'Що вимірює шкала Бофорта?', ['Силу вітру', 'Силу землетрусів', 'Твердість мінералів', 'Солоність води']],
+  [3, 'nat', 'Якого кольору кров у восьминога?', ['Блакитного', 'Червоного', 'Зеленого', 'Безбарвна'], 'Кисень у його крові переносить мідь, а не залізо, — звідси блакитний колір.'],
+  [3, 'nat', 'Скільки ніг у краба разом із клешнями?', ['10', '8', '6', '12'], 'Краби належать до десятиногих ракоподібних.'],
+  [3, 'nat', 'Скільки шийних хребців у жирафа?', ['7', '14', '21', '3'], 'Стільки ж, скільки в людини, — просто кожен завдовжки до 25 см.'],
+  [3, 'spo', 'Хто був головним тренером збірної України на чемпіонаті світу 2006 року?', ['Олег Блохін', 'Валерій Лобановський', 'Андрій Шевченко', 'Мирон Маркевич']],
+  [3, 'food', 'Звідки походить назва «капучино»?', ['Від кольору ряс ченців-капуцинів', 'Від італійського міста Капуя', 'Від прізвища першого баристи', 'Від слова «капюшон»']],
+  [3, 'math', 'Яке число позначає римська M?', ['1000', '500', '100', '5000']],
+  [3, 'ua', 'Яку назву раніше мав Кропивницький?', ['Єлисаветград', 'Катеринослав', 'Олександрівськ', 'Юзівка']],
+  [3, 'mus', 'Який український фільм Сергія Параджанова здобув світову славу 1965 року?', ['«Тіні забутих предків»', '«Земля»', '«Білий птах з чорною ознакою»', '«Камінний хрест»']],
+];
+
+
+/* ---------- avatars (blocky, roblox-like) ---------- */
+const SKINS = ['#f7c873', '#f39a4f', '#ec6a5e', '#a6cf7e', '#78c3d6', '#b8a1f2', '#f5a9c4', '#d39a68', '#8d5b3d', '#efe2cb'];
+const SHIRTS = ['#e8573f', '#f0a030', '#5f9e6e', '#3f7fbf', '#8a5cc7', '#d6457a', '#2f2a3d', '#f2ead8', '#7a4a2a', '#4fb3a9'];
+const FACES = ['smile', 'grin', 'wink', 'cool', 'shy', 'wow', 'sleepy', 'silly', 'smug', 'love'];
+const HATS = ['none', 'cap', 'beanie', 'crown', 'leaf', 'pumpkin', 'headphones', 'bow', 'tophat', 'horns'];
+const INK = '#2b1a14';
+
+function faceSVG(f) {
+  const eyes = `<ellipse cx="47" cy="52" rx="4.5" ry="6.5" fill="${INK}"/><ellipse cx="73" cy="52" rx="4.5" ry="6.5" fill="${INK}"/>`;
+  const st = `stroke="${INK}" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"`;
+  switch (f) {
+    case 'grin': return eyes + `<path d="M43 63 H77 Q75 83 60 83 Q45 83 43 63Z" fill="${INK}"/><path d="M47 64 H73 V69 Q60 71 47 69Z" fill="#fff"/>`;
+    case 'wink': return `<ellipse cx="47" cy="52" rx="4.5" ry="6.5" fill="${INK}"/><path d="M66 54 Q73 46 80 54" ${st}/><path d="M46 66 Q61 78 75 64" ${st}/>`;
+    case 'cool': return `<rect x="34" y="44" width="23" height="14" rx="5" fill="${INK}"/><rect x="63" y="44" width="23" height="14" rx="5" fill="${INK}"/><path d="M56 49 H64" stroke="${INK}" stroke-width="3"/><rect x="38" y="47" width="7" height="3" rx="1.5" fill="#fff" opacity=".6"/><rect x="67" y="47" width="7" height="3" rx="1.5" fill="#fff" opacity=".6"/><path d="M50 70 Q63 75 72 65" ${st}/>`;
+    case 'shy': return `<circle cx="48" cy="53" r="4" fill="${INK}"/><circle cx="72" cy="53" r="4" fill="${INK}"/><ellipse cx="40" cy="64" rx="6.5" ry="4" fill="#ff6f91" opacity=".5"/><ellipse cx="80" cy="64" rx="6.5" ry="4" fill="#ff6f91" opacity=".5"/><path d="M54 68 Q60 73 66 68" ${st}/>`;
+    case 'wow': return `<circle cx="47" cy="51" r="6.5" fill="${INK}"/><circle cx="49" cy="49" r="2.2" fill="#fff"/><circle cx="73" cy="51" r="6.5" fill="${INK}"/><circle cx="75" cy="49" r="2.2" fill="#fff"/><ellipse cx="60" cy="71" rx="5.5" ry="7" fill="${INK}"/>`;
+    case 'sleepy': return `<path d="M41 53 Q47 58 53 53" ${st}/><path d="M67 53 Q73 58 79 53" ${st}/><path d="M55 70 Q60 73 65 70" ${st}/><text x="80" y="42" font-family="Arial" font-size="13" font-weight="900" fill="${INK}" opacity=".55">z</text>`;
+    case 'silly': return eyes + `<path d="M46 65 Q60 75 74 65" ${st}/><path d="M56 70 Q55 81 61 81 Q67 81 66 70Z" fill="#ff6f91" stroke="${INK}" stroke-width="2.5"/>`;
+    case 'smug': return `<path d="M41 50 H53" ${st}/><path d="M67 50 H79" ${st}/><ellipse cx="48" cy="54" rx="4" ry="3.5" fill="${INK}"/><ellipse cx="74" cy="54" rx="4" ry="3.5" fill="${INK}"/><path d="M50 69 Q64 72 74 63" ${st}/>`;
+    case 'love': return `<path d="M47 58 l-7 -7 a4 4 0 0 1 7 -5 a4 4 0 0 1 7 5z" fill="#e35a72"/><path d="M73 58 l-7 -7 a4 4 0 0 1 7 -5 a4 4 0 0 1 7 5z" fill="#e35a72"/><path d="M46 66 Q60 78 74 66" ${st}/>`;
+    default: return eyes + `<path d="M46 66 Q60 78 74 66" ${st}/>`;
+  }
+}
+function hatSVG(h) {
+  switch (h) {
+    case 'cap': return `<path d="M25 42 Q25 13 60 13 Q95 13 95 42 Z" fill="#d6457a"/><path d="M25 42 Q25 13 60 13 Q66 13 70 14 Q48 18 44 42Z" fill="#fff" opacity=".18"/><rect x="58" y="35" width="50" height="9" rx="4.5" fill="#9c2f55"/><circle cx="60" cy="14" r="3.5" fill="#9c2f55"/>`;
+    case 'beanie': return `<path d="M23 42 Q23 8 60 8 Q97 8 97 42Z" fill="#f0a030"/><path d="M40 14 V36 M52 10 V36 M68 10 V36 M80 14 V36" stroke="#c77f1a" stroke-width="3"/><rect x="21" y="32" width="78" height="13" rx="6.5" fill="#c77f1a"/><circle cx="60" cy="8" r="7.5" fill="#f2ead8"/>`;
+    case 'crown': return `<path d="M32 32 L35 8 L47 21 L60 4 L73 21 L85 8 L88 32 Z" fill="#f6c443" stroke="#b9831c" stroke-width="3" stroke-linejoin="round"/><circle cx="60" cy="24" r="3.8" fill="#e8573f"/><circle cx="45" cy="27" r="2.6" fill="#3f7fbf"/><circle cx="75" cy="27" r="2.6" fill="#5f9e6e"/>`;
+    case 'leaf': return `<g transform="translate(82 20) rotate(28)"><path d="M0 -17 C10 -10 13 0 0 15 C-13 0 -10 -10 0 -17Z" fill="#e8673a"/><path d="M0 -13 V19" stroke="#9c3f1f" stroke-width="2.4" stroke-linecap="round"/><path d="M0 -3 L6 -8 M0 4 L-6 -1" stroke="#9c3f1f" stroke-width="1.8" stroke-linecap="round"/></g><g transform="translate(66 18) rotate(-20) scale(.7)"><path d="M0 -17 C10 -10 13 0 0 15 C-13 0 -10 -10 0 -17Z" fill="#f4b942"/><path d="M0 -13 V17" stroke="#b78220" stroke-width="2.4"/></g>`;
+    case 'pumpkin': return `<ellipse cx="60" cy="23" rx="35" ry="16" fill="#f08a3c"/><path d="M47 9 Q42 23 47 38 M73 9 Q78 23 73 38 M60 7 V39" stroke="#c4621f" stroke-width="3" fill="none"/><rect x="56" y="0" width="8" height="11" rx="3" fill="#5f7a3c"/><path d="M64 4 Q74 0 76 8" stroke="#5f7a3c" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    case 'headphones': return `<path d="M26 55 Q26 12 60 12 Q94 12 94 55" stroke="#2f2a3d" stroke-width="7" fill="none" stroke-linecap="round"/><rect x="15" y="44" width="17" height="27" rx="7" fill="#e8573f"/><rect x="88" y="44" width="17" height="27" rx="7" fill="#e8573f"/><rect x="18" y="48" width="5" height="12" rx="2.5" fill="#fff" opacity=".3"/>`;
+    case 'bow': return `<g transform="translate(42 25) rotate(-12)"><path d="M0 0 L-17 -11 Q-21 0 -17 11Z" fill="#f5a9c4" stroke="#d6457a" stroke-width="3" stroke-linejoin="round"/><path d="M0 0 L17 -11 Q21 0 17 11Z" fill="#f5a9c4" stroke="#d6457a" stroke-width="3" stroke-linejoin="round"/><circle r="5.5" fill="#d6457a"/></g>`;
+    case 'tophat': return `<rect x="24" y="25" width="72" height="9" rx="4.5" fill="#2f2a3d"/><rect x="37" y="1" width="46" height="29" rx="5" fill="#2f2a3d"/><rect x="37" y="19" width="46" height="6" fill="#e8573f"/><rect x="41" y="4" width="6" height="14" rx="3" fill="#fff" opacity=".12"/>`;
+    case 'horns': return `<path d="M33 30 Q25 12 37 4 Q37 18 47 27Z" fill="#e35a72" stroke="#9e2f46" stroke-width="2.5" stroke-linejoin="round"/><path d="M87 30 Q95 12 83 4 Q83 18 73 27Z" fill="#e35a72" stroke="#9e2f46" stroke-width="2.5" stroke-linejoin="round"/>`;
+    default: return '';
+  }
+}
+function avatarSVG(a, opt = {}) {
+  a = a || {};
+  const skin = SKINS[a.skin] || SKINS[0];
+  const shirt = SHIRTS[a.shirt] || SHIRTS[0];
+  const head = `<rect x="52" y="80" width="16" height="14" fill="${skin}"/><rect x="52" y="80" width="16" height="6" fill="#000" opacity=".12"/>
+    <rect x="26" y="24" width="68" height="62" rx="16" fill="${skin}"/>
+    <path d="M78 24 a16 16 0 0 1 16 16 v30 a16 16 0 0 1 -16 16 h-4 v-62z" fill="#000" opacity=".1"/>
+    <rect x="34" y="30" width="22" height="8" rx="4" fill="#fff" opacity=".35"/>`;
+  const body = opt.noBody ? '' : `<rect x="20" y="91" width="80" height="40" rx="14" fill="${shirt}"/><path d="M80 91 h6 a14 14 0 0 1 14 14 v26 h-20z" fill="#000" opacity=".12"/><rect x="28" y="96" width="20" height="6" rx="3" fill="#fff" opacity=".25"/>`;
+  const w = opt.size ? ` width="${opt.size}" height="${opt.size}"` : '';
+  return `<svg viewBox="0 0 120 120"${w} xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${body}${head}${faceSVG(FACES[a.face] || 'smile')}${hatSVG(HATS[a.hat] || 'none')}</svg>`;
+}
+const randomAvatar = () => ({ skin: rnd(SKINS.length), face: rnd(FACES.length), hat: rnd(HATS.length), shirt: rnd(SHIRTS.length) });
+const ava = (a, cls = 'md') => `<div class="ava ${cls}">${avatarSVG(a)}</div>`;
+
+(function leaves() {
+  const box = $('#leaves');
+  const cols = ['#e8673a', '#f4b942', '#c94f2c', '#f08a3c', '#a8582f', '#d9a441'];
+  const n = window.innerWidth < 500 ? 8 : 12;
+  for (let i = 0; i < n; i++) {
+    const s = 14 + rnd(16);
+    const el = document.createElement('div');
+    el.className = 'leaf';
+    el.style.left = rnd(100) + '%';
+    el.style.animationDuration = (11 + rnd(10)) + 's';
+    el.style.animationDelay = (-rnd(20)) + 's';
+    el.style.opacity = (0.35 + Math.random() * 0.4).toFixed(2);
+    el.innerHTML = `<svg width="${s}" height="${s}" viewBox="-12 -18 24 36" style="animation-duration:${2 + Math.random() * 2}s"><path d="M0 -17 C10 -10 13 0 0 15 C-13 0 -10 -10 0 -17Z" fill="${pick(cols)}"/><path d="M0 -13 V18" stroke="rgba(0,0,0,.3)" stroke-width="1.6"/></svg>`;
+    box.appendChild(el);
+  }
+})();
+
+/* ---------- toasts, fx, sheets ---------- */
+function toast(html, ms = 2600) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.innerHTML = html;
+  $('#toasts').appendChild(el);
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 400); }, ms);
+}
+
+function confetti(good) {
+  const items = good ? ['🍁', '🍂', '✨', '⭐', '🎉', '🧡'] : ['💨', '🍂', '😅'];
+  const n = good ? 26 : 8;
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti';
+    el.textContent = pick(items);
+    $('#fx').appendChild(el);
+    const a = Math.random() * Math.PI * 2, d = 120 + Math.random() * 200;
+    const dx = Math.cos(a) * d, dy = Math.sin(a) * d - 120;
+    el.animate([
+      { transform: 'translate(-50%,-50%) scale(.2) rotate(0)', opacity: 1 },
+      { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1.2) rotate(${rnd(360)}deg)`, opacity: 1, offset: 0.55 },
+      { transform: `translate(calc(-50% + ${dx * 1.1}px), calc(-50% + ${dy + 260}px)) scale(.9) rotate(${rnd(720)}deg)`, opacity: 0 },
+    ], { duration: 1500 + rnd(700), easing: 'cubic-bezier(.15,.7,.3,1)' }).onfinish = () => el.remove();
+  }
+}
+function openSheet(html, onMount) {
+  const sh = $('#sheet');
+  sh.classList.remove('hidden', 'closing');
+  const body = $('.sheet-body', sh);
+  body.innerHTML = '<div class="grab"></div>' + html;
+  body.scrollTop = 0;
+  $('.sheet-bg', sh).onclick = closeSheet;
+  if (onMount) onMount(body);
+}
+function closeSheet() {
+  const sh = $('#sheet');
+  if (sh.classList.contains('hidden')) return;
+  sh.classList.add('closing');
+  setTimeout(() => sh.classList.add('hidden'), 300);
+}
+
+
+/* ---------- profile editor ---------- */
+function mountEditor(root, profile, onChange) {
+  const p = { nick: profile.nick || '', avatar: Object.assign(randomAvatar(), profile.avatar || {}) };
+  let tab = 'face';
+  root.innerHTML = `
+    <div class="ed-top">
+      <div class="ava xl" id="edAva"></div>
+      <div class="ed-side">
+        <label class="lbl" for="edNick">Твій нік</label>
+        <input type="text" id="edNick" maxlength="16" autocomplete="off" placeholder="${esc(pick(NICKS))}">
+        <button class="chip" id="edRand" type="button">🎲 Навмання</button>
+      </div>
+    </div>
+    <div class="tabs" id="edTabs">
+      <button data-t="face" class="on" type="button">Обличчя</button><button data-t="hat" type="button">Шапка</button>
+      <button data-t="skin" type="button">Колір</button><button data-t="shirt" type="button">Одяг</button>
+    </div>
+    <div class="grid" id="edGrid"></div>`;
+  const nick = $('#edNick', root);
+  nick.value = p.nick;
+  const avaEl = $('#edAva', root);
+  const drawAva = (animate) => {
+    avaEl.innerHTML = avatarSVG(p.avatar);
+    if (animate) { avaEl.classList.remove('ava-pop'); void avaEl.offsetWidth; avaEl.classList.add('ava-pop'); }
+  };
+  const drawGrid = () => {
+    const list = { face: FACES, hat: HATS, skin: SKINS, shirt: SHIRTS }[tab];
+    $('#edGrid', root).innerHTML = list.map((_, i) => {
+      let inner;
+      if (tab === 'skin' || tab === 'shirt') inner = `<span class="swatch" style="background:${list[i]}"></span>`;
+      else inner = avatarSVG(Object.assign({}, p.avatar, { [tab]: i }), { noBody: true });
+      return `<button type="button" data-i="${i}" class="${p.avatar[tab] === i ? 'on' : ''}" aria-label="${tab} ${i + 1}">${inner}</button>`;
+    }).join('');
+  };
+  const changed = () => { onChange && onChange(get()); };
+  $('#edTabs', root).addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    tab = b.dataset.t;
+    $$('#edTabs button', root).forEach((x) => x.classList.toggle('on', x === b));
+    drawGrid();
+  });
+  $('#edGrid', root).addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    p.avatar[tab] = +b.dataset.i;
+    $$('#edGrid button', root).forEach((x) => x.classList.toggle('on', x === b));
+    drawAva(true); changed();
+  });
+  $('#edRand', root).addEventListener('click', () => {
+    p.avatar = randomAvatar();
+    if (!nick.value.trim()) nick.placeholder = pick(NICKS);
+    drawAva(true); drawGrid(); changed();
+  });
+  nick.addEventListener('input', changed);
+  const get = () => ({ nick: (nick.value.trim() || nick.placeholder).slice(0, 16), avatar: clone(p.avatar) });
+  drawAva(false); drawGrid();
+  return get;
+}
+
+/* ---------- global state ---------- */
+const PREFIX = 'erudyt-';
+const MAX_PLAYERS = 4;
+const OPT_COLORS = ['#f08a3c', '#7fb7d9', '#93b977', '#e35a72'];
+const LETTERS = ['А', 'Б', 'В', 'Г'];
+const INTRO_MS = 2600;
+const REVEAL_MS = 16000;
+const DIFF = { 1: 'Легке', 2: 'Середнє', 3: 'Складне' };
+const stars = (d) => [1, 2, 3].map((i) => `<i class="${i <= d ? 'on' : ''}">★</i>`).join('');
+
+// герой з «Вгадай мене» переїжджає сюди автоматично
+let ME_PROFILE = store.get('profile', null) || (() => { try { return JSON.parse(localStorage.getItem('vg:profile')); } catch (e) { return null; } })();
+let PID = store.get('pid', null);
+if (!PID) { PID = randomCode(12); store.set('pid', PID); }
+let IS_HOST = false;
+let CODE = null, HOST_NICK = '', S = null, VIEW = null, lastStageKey = null;
+const P = (pid) => (S && S.players[pid]) || { nick: '…', avatar: {}, score: 0 };
+const nickOf = (pid) => esc(P(pid).nick);
+const isOnline = (pid) => !!(S && S.online && S.online.includes(pid));
+const hostNow = () => Date.now() + (IS_HOST ? 0 : Net.offset);
+function randomCode(n = 9) {
+  const a = 'abcdefghjkmnpqrstuvwxyz23456789';
+  const buf = new Uint32Array(n);
+  crypto.getRandomValues(buf);
+  return Array.from(buf, (x) => a[x % a.length]).join('');
+}
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function vibrate(p) { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} }
+
+/* ---------- floating emotes ---------- */
+function floatEmoji(e, pid) {
+  const el = document.createElement('div');
+  el.className = 'float';
+  el.innerHTML = `<span class="fe">${e}</span>${pid && S && S.players[pid] ? `<span class="fa">${avatarSVG(P(pid).avatar, { noBody: true })}</span>` : ''}`;
+  el.style.left = (12 + rnd(76)) + '%';
+  $('#fx').appendChild(el);
+  const drift = (Math.random() - 0.5) * 80;
+  el.animate([
+    { transform: 'translate(-50%,0) scale(.4)', opacity: 0 },
+    { transform: `translate(calc(-50% + ${drift * 0.3}px),-90px) scale(1.2)`, opacity: 1, offset: 0.2 },
+    { transform: `translate(calc(-50% + ${drift}px),-440px) scale(1)`, opacity: 0 },
+  ], { duration: 2400, easing: 'cubic-bezier(.2,.8,.2,1)' }).onfinish = () => el.remove();
+}
+
+/* ---------- screens ---------- */
+function show(view) {
+  if (VIEW === view) return false;
+  VIEW = view;
+  ['home', 'connect', 'room'].forEach((v) => $('#scr-' + v).classList.toggle('hidden', v !== view));
+  $('#react').classList.toggle('hidden', view !== 'room');
+  window.scrollTo({ top: 0 });
+  return true;
+}
+
+function renderHome() {
+  show('home');
+  const el = $('#scr-home');
+  const last = store.get('lastRoom', null);
+  const joining = !!CODE;
+  el.className = 'screen enter';
+  el.innerHTML = `
+    <div class="logo"><div class="logo-badge owl">🦉</div><h1>Еру<span>дит</span></h1>
+      <p class="muted">Сімейна вікторина на 2–4 гравців: від простих питань до складних, на час.</p></div>
+    ${joining ? `<div class="card invite"><div class="ico">💌</div><div><b>${esc(HOST_NICK || 'Хтось')}</b> кличе тебе на вікторину! Створи свого героя й заходь.</div></div>` : ''}
+    <div class="card" id="editor"></div>
+    <button class="btn" id="btnGo">${joining ? 'Увійти в гру ➜' : 'Створити кімнату ➜'}</button>
+    ${!joining && last ? `<button class="btn ghost small" id="btnResume">↩ Повернутись у останню кімнату</button>` : ''}`;
+  const get = mountEditor($('#editor', el), ME_PROFILE || {}, null);
+  $('#btnGo', el).onclick = () => {
+    ME_PROFILE = get();
+    store.set('profile', ME_PROFILE);
+    if (joining) enterRoom(); else createRoom();
+  };
+  const r = $('#btnResume', el);
+  if (r) r.onclick = () => { location.hash = last.hash; };
+}
+
+function renderConnect() {
+  const first = show('connect');
+  const el = $('#scr-connect');
+  const k = Net.full ? 'full' : Net.hostAway ? 'away' : 'conn';
+  if (!first && el.dataset.k === k) { const s = $('#cStatus', el); if (s) s.textContent = Net.status; return; }
+  el.dataset.k = k;
+  el.className = 'screen' + (first ? ' enter' : '');
+  const title = k === 'full' ? 'Кімната вже повна 😕' : k === 'away' ? `${esc(HOST_NICK || 'Господар')} зараз не в грі` : 'Заходимо в гру…';
+  const sub = k === 'full' ? `У грі вже ${MAX_PLAYERS} гравці. Попроси створити нову кімнату.` : k === 'away' ? 'Щойно кімнату відкриють — під’єднаємось самі' : '';
+  el.innerHTML = `
+    <div class="logo"><div class="logo-badge owl">🦉</div><h1>Еру<span>дит</span></h1></div>
+    <div class="card wait">
+      <div class="ava xl bob">${avatarSVG(ME_PROFILE.avatar)}</div>
+      <h2>${title}</h2>
+      ${k === 'full' ? `<p class="muted" style="margin:0">${sub}</p>` : `<div class="status"><span class="spin"></span><span id="cStatus">${sub || esc(Net.status)}</span></div>`}
+    </div>
+    <button class="btn ghost small" id="btnLeave">Вийти</button>`;
+  $('#btnLeave', el).onclick = leaveRoom;
+}
+
+function inviteURL() {
+  return location.origin + location.pathname + location.search + '#r=' + CODE + '&n=' + encodeURIComponent(P(S.host).nick || ME_PROFILE.nick);
+}
+async function shareInvite() {
+  const url = inviteURL();
+  const text = `${P(S.host).nick} кличе тебе на вікторину «Ерудит» 🦉`;
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Ерудит', text, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  copyInvite();
+}
+async function copyInvite() {
+  const url = inviteURL();
+  try { await navigator.clipboard.writeText(url); toast('Посилання скопійовано 📋'); }
+  catch (e) { prompt('Скопіюй посилання:', url); }
+}
+
+/* ---------- room (lobby / game / final) ---------- */
+function renderRoom() {
+  const first = show('room');
+  renderTop();
+  renderBanner();
+  const k = stageKey();
+  if (k !== lastStageKey || first) {
+    lastStageKey = k;
+    const st = $('#stage');
+    st.className = 'enter';
+    st.innerHTML = '';
+    buildStage(st);
+    if (!first) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  patchStage();
+}
+function stageKey() {
+  if (S.phase === 'question') return 'q' + S.qi + (S.q.answers[PID] ? 'a' : '');
+  if (S.phase === 'reveal') return 'r' + S.qi;
+  return S.phase + '|' + S.game;
+}
+function renderTop() {
+  const top = $('#top');
+  const inGame = S.phase === 'question' || S.phase === 'reveal';
+  top.innerHTML = `<div class="brand"><span class="b-ico">🦉</span><span class="disp">Ерудит</span></div>
+    ${inGame ? `<div class="prog"><b>${S.qi + 1}</b>/${S.plan.length}</div>` : ''}
+    <button class="menu-btn" id="btnMenu" aria-label="Меню">⋯</button>`;
+  $('#btnMenu').onclick = openMenu;
+}
+function renderBanner() {
+  const b = $('#banner');
+  let msg = '';
+  if (!IS_HOST && !Net.conn) msg = `<span class="spin"></span> Зв’язок перервався — перепідключаємось…`;
+  else if (!Net.ready()) msg = `<span class="spin"></span> ${esc(Net.status)}`;
+  if (b.dataset.k === msg) return;
+  b.dataset.k = msg;
+  b.innerHTML = msg ? `<div class="banner">${msg}</div>` : '';
+}
+
+function slotsHTML() {
+  const pids = S.order;
+  let html = pids.map((pid) => `<div class="slot ${isOnline(pid) ? '' : 'off'}">
+      ${pid === S.host ? '<span class="crown" title="Господар">👑</span>' : ''}
+      ${ava(P(pid).avatar, 'lg')}<b class="nm">${nickOf(pid)}${pid === PID ? ' · ти' : ''}</b>
+      <span class="st">${isOnline(pid) ? '<i class="okdot"></i> у грі' : '💤 відійшли'}</span></div>`).join('');
+  for (let i = pids.length; i < MAX_PLAYERS; i++) html += `<div class="slot empty"><div class="empty-slot sm">?</div><b class="nm muted">вільне місце</b></div>`;
+  return `<div class="slots">${html}</div>`;
+}
+
+function buildStage(st) {
+  if (S.phase === 'lobby') return buildLobby(st);
+  if (S.phase === 'question') return buildQuestion(st);
+  if (S.phase === 'reveal') return buildReveal(st);
+  if (S.phase === 'final') return buildFinal(st);
+}
+
+/* --- lobby --- */
+function buildLobby(st) {
+  const set = S.settings;
+  st.innerHTML = `
+    <div class="stage-head"><span class="tag">Кімната</span><h2>Збираємо команду 🦉</h2>
+      <p class="muted">${IS_HOST ? 'Надішли посилання рідним — кожен відкриє його на своєму телефоні.' : `Чекаємо, поки ${nickOf(S.host)} почне гру.`}</p></div>
+    <div class="card" id="slots">${slotsHTML()}</div>
+    ${IS_HOST ? `<button class="btn sky" id="btnShare">📨 Запросити рідних</button>` : ''}
+    <div class="card">
+      <div class="lbl">Скільки питань</div>
+      <div class="seg" id="setCount">${[10, 15, 20].map((n) => `<button data-v="${n}" class="${set.count === n ? 'on' : ''}" ${IS_HOST ? '' : 'disabled'}><b>${n}</b><small>${n === 10 ? '≈ 7 хв' : n === 15 ? '≈ 10 хв' : '≈ 14 хв'}</small></button>`).join('')}</div>
+      <div class="lbl" style="margin-top:16px">Час на відповідь</div>
+      <div class="seg" id="setTimer">${[[15, '⚡', 'швидко'], [20, '🙂', 'звично'], [30, '☕', 'спокійно']].map(([n, e, t]) => `<button data-v="${n}" class="${set.timer === n ? 'on' : ''}" ${IS_HOST ? '' : 'disabled'}><span class="e">${e}</span><b>${n} с</b><small>${t}</small></button>`).join('')}</div>
+    </div>
+    <div class="card rules"><div class="lbl">Правила</div>
+      <p>🎯 Усі відповідають одночасно. Правильно: <b>100 / 200 / 300</b> очок залежно від складності, плюс до <b>50 %</b> бонусу за швидкість.</p>
+      <p>✂️ Кожен має одну підказку <b>50/50</b> на гру.</p>
+      <p>🔥 Останнє питання — <b>фінальне, очки ×2</b>.</p></div>
+    ${IS_HOST ? `<button class="btn" id="btnStart">Почати гру ➜</button><p class="hint center" id="startHint" style="margin:-6px 0 0"></p>` : `<div class="status"><span class="dots"><i></i><i></i><i></i></span> ${nickOf(S.host)} налаштовує гру</div>`}`;
+  if (IS_HOST) {
+    $('#btnShare', st).onclick = shareInvite;
+    $('#setCount', st).onclick = (e) => { const b = e.target.closest('button'); if (b) dispatch({ k: 'settings', count: +b.dataset.v }); };
+    $('#setTimer', st).onclick = (e) => { const b = e.target.closest('button'); if (b) dispatch({ k: 'settings', timer: +b.dataset.v }); };
+    $('#btnStart', st).onclick = () => dispatch({ k: 'start' });
+  }
+}
+
+/* --- question --- */
+function buildQuestion(st) {
+  const q = S.q;
+  const [ce, cn] = CATS[q.cat] || ['🎲', 'Різне'];
+  const mine = q.answers[PID];
+  const fifty = (q.fifty && q.fifty[PID]) || [];
+  st.innerHTML = `
+    <div class="intro card" id="intro">
+      <div class="i-cat">${ce}</div>
+      <div class="i-num">Питання ${S.qi + 1} з ${S.plan.length}</div>
+      <h2>${cn}</h2>
+      <div class="diff">${stars(q.d)} <span>${DIFF[q.d]}</span></div>
+      ${q.final ? '<div class="final-tag">🔥 Фінальне питання · очки ×2</div>' : ''}
+    </div>
+    <div class="qwrap" id="qwrap">
+      <div class="qmeta"><span class="tag">${ce} ${cn}</span><span class="diff">${stars(q.d)}</span>${q.final ? '<span class="tag hot">×2</span>' : ''}</div>
+      <div class="timerrow"><div class="timer" id="timer"><i></i></div><div class="tsec" id="tsec">${S.settings.timer}</div></div>
+      <div class="card"><div class="qtext big">${esc(q.text)}</div></div>
+      <div class="opts" id="opts">${q.options.map((o, i) => `<button class="opt ${mine && mine.i === i ? 'sel' : ''} ${fifty.includes(i) ? 'gone' : ''}" data-i="${i}" style="--c:${OPT_COLORS[i]}" ${mine ? 'disabled' : ''}>
+        <span class="let">${LETTERS[i]}</span><span class="tx">${esc(o)}</span></button>`).join('')}</div>
+      ${mine ? `<div class="locked pop">🔒 Відповідь прийнято — чекаємо на інших</div>`
+        : `<button class="chip joker" id="btnFifty" ${P(PID).fifty ? 'disabled' : ''}>✂️ 50/50 ${P(PID).fifty ? '· використано' : '· одна на гру'}</button>`}
+      <div class="answered" id="answered"></div>
+    </div>`;
+  if (!mine) {
+    $('#opts', st).onclick = (e) => {
+      const b = e.target.closest('.opt'); if (!b || b.disabled || b.classList.contains('gone')) return;
+      if (hostNow() < q.startAt) return;
+      const i = +b.dataset.i;
+      b.classList.add('sel');
+      $$('.opt', st).forEach((x) => (x.disabled = true));
+      vibrate(15);
+      dispatch({ k: 'answer', i, ms: Math.max(0, Math.round(hostNow() - q.startAt)) });
+    };
+    const f = $('#btnFifty', st);
+    if (f) f.onclick = () => { if (!P(PID).fifty) { f.disabled = true; dispatch({ k: 'fifty' }); } };
+  }
+}
+
+/* --- reveal --- */
+function buildReveal(st) {
+  const q = S.q, res = q.results || {};
+  const me = res[PID] || { ok: false, pts: 0 };
+  const answered = q.answers[PID];
+  const fact = q.fact;
+  let title, cls;
+  if (me.ok) { title = me.pts >= (q.final ? 2 : 1) * q.d * 140 ? 'Блискавично! ⚡' : 'Правильно! 🎯'; cls = ''; }
+  else if (!answered) { title = 'Час вийшов ⏰'; cls = 'bad'; }
+  else { title = 'Мимо 🙈'; cls = 'bad'; }
+  const pickers = (i) => S.order.filter((pid) => res[pid] && res[pid].i === i).map((pid) => `<span class="pk">${avatarSVG(P(pid).avatar, { noBody: true })}</span>`).join('');
+  st.innerHTML = `
+    <div class="result ${cls} pop"><div class="big">${title}</div>
+      <div class="delta">${me.ok ? '+' + me.pts : '0'}${q.final && me.ok ? ' <small>(×2)</small>' : ''}</div>
+      ${me.ok && me.bonus ? `<div class="sub">з них ⚡ ${me.bonus * (q.final ? 2 : 1)} за швидкість · ${(me.ms / 1000).toFixed(1)} с</div>` : ''}
+      ${P(PID).streak >= 3 ? `<div class="sub">🔥 Серія: ${P(PID).streak} поспіль!</div>` : ''}</div>
+    <div class="card"><div class="qtext">${esc(q.text)}</div></div>
+    <div class="opts">${q.options.map((o, i) => `<div class="opt ${i === q.correct ? 'right' : (answered && answered.i === i ? 'wrong' : 'dim')}" style="--c:${OPT_COLORS[i]}">
+      <span class="let">${LETTERS[i]}</span><span class="tx">${esc(o)}</span><span class="pickers">${pickers(i)}</span></div>`).join('')}</div>
+    ${fact ? `<div class="card factbox"><div class="lbl">💡 А ви знали?</div><div class="fact-text">${esc(fact)}</div></div>` : ''}
+    <div class="card"><div class="lbl">Таблиця</div><div class="board" id="board"></div></div>
+    <button class="btn" id="btnReady">${S.qi + 1 >= S.plan.length ? 'До результатів 🏆' : 'Далі ➜'}</button>
+    <div class="readyrow" id="readyrow"></div>
+    <div class="nextbar"><i id="nextbar"></i></div>`;
+  drawBoard($('#board', st), true);
+  $('#btnReady', st).onclick = (e) => { e.currentTarget.disabled = true; e.currentTarget.innerHTML = '✓ Готово'; dispatch({ k: 'ready' }); };
+  if (S.ready && S.ready[PID]) { const b = $('#btnReady', st); b.disabled = true; b.innerHTML = '✓ Готово'; }
+  const fxKey = 'fx:' + CODE;
+  if (store.get(fxKey, '') !== S.game + ':' + S.qi) {
+    store.set(fxKey, S.game + ':' + S.qi);
+    setTimeout(() => confetti(me.ok), 150);
+    vibrate(me.ok ? [30, 40, 30] : 120);
+  }
+}
+function drawBoard(box, animate) {
+  const res = (S.q && S.q.results) || {};
+  const rows = S.order.map((pid) => ({ pid, score: P(pid).score, gain: res[pid] ? res[pid].pts : 0 }));
+  const before = rows.slice().sort((a, b) => (b.score - b.gain) - (a.score - a.gain) || S.order.indexOf(a.pid) - S.order.indexOf(b.pid));
+  const after = rows.slice().sort((a, b) => b.score - a.score || S.order.indexOf(a.pid) - S.order.indexOf(b.pid));
+  const H = 64;
+  box.style.height = rows.length * H + 'px';
+  box.innerHTML = rows.map((r) => {
+    const oldI = before.indexOf(r), newI = after.indexOf(r);
+    return `<div class="brow ${r.pid === PID ? 'me' : ''}" data-pid="${r.pid}" data-new="${newI}" style="top:${(animate ? oldI : newI) * H}px">
+      <span class="pos">${newI + 1}</span>${ava(P(r.pid).avatar, 'xs')}<span class="nm">${nickOf(r.pid)}</span>
+      ${r.gain ? `<span class="gain">+${r.gain}</span>` : ''}<span class="pts" data-from="${animate ? r.score - r.gain : r.score}" data-to="${r.score}">${animate ? r.score - r.gain : r.score}</span></div>`;
+  }).join('');
+  if (!animate) return;
+  setTimeout(() => {
+    $$('.brow', box).forEach((row) => {
+      row.style.top = (+row.dataset.new * H) + 'px';
+      const el = $('.pts', row), from = +el.dataset.from, to = +el.dataset.to;
+      if (from === to) return;
+      const t0 = performance.now();
+      const step = (t) => { const k = Math.min(1, (t - t0) / 900); el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); };
+      requestAnimationFrame(step);
+    });
+  }, 700);
+}
+
+/* --- final --- */
+function buildFinal(st) {
+  const ranked = S.order.slice().sort((a, b) => P(b).score - P(a).score);
+  const pod = (pid, place) => pid ? `<div class="pod p${place}">${place === 1 ? '<div class="crown-big">👑</div>' : ''}${ava(P(pid).avatar, place === 1 ? 'lg' : 'md')}
+      <b class="nm">${nickOf(pid)}</b><span class="sc">${P(pid).score}</span><div class="col">${place}</div></div>` : '<div class="pod"></div>';
+  const hist = S.history || [];
+  const fastest = [];
+  hist.forEach((h) => Object.entries(h.results).forEach(([pid, r]) => { if (r.ok) fastest.push({ pid, ms: r.ms }); }));
+  fastest.sort((a, b) => a.ms - b.ms);
+  const acc = (pid) => { const n = hist.length || 1; return Math.round((P(pid).right || 0) / n * 100); };
+  const winner = ranked[0];
+  const tie = ranked.length > 1 && P(ranked[0]).score === P(ranked[1]).score;
+  st.innerHTML = `
+    <div class="stage-head center" style="align-items:center"><span class="tag">Гру завершено</span>
+      <h2>${tie ? 'Нічия на вершині! 🤝' : `${winner === PID ? 'Ти' : nickOf(winner)} — Ерудит вечора! 🏆`}</h2></div>
+    <div class="podium">${pod(ranked[1], 2)}${pod(ranked[0], 1)}${pod(ranked[2], 3)}</div>
+    ${ranked[3] ? `<div class="card fourth">${ava(P(ranked[3]).avatar, 'xs')} <b>4. ${nickOf(ranked[3])}</b> <span class="muted">· ${P(ranked[3]).score}</span></div>` : ''}
+    <div class="card"><div class="lbl">Нагороди</div>
+      ${fastest[0] ? `<div class="award">⚡ <span>Найшвидша правильна відповідь</span><b>${nickOf(fastest[0].pid)} · ${(fastest[0].ms / 1000).toFixed(1)} с</b></div>` : ''}
+      ${S.order.map((pid) => `<div class="award">${ava(P(pid).avatar, 'xs')} <span>${nickOf(pid)}</span><b>${P(pid).right || 0} з ${hist.length} · ${acc(pid)}%</b></div>`).join('')}
+      ${(() => { const best = S.order.slice().sort((a, b) => (P(b).bestStreak || 0) - (P(a).bestStreak || 0))[0]; return best && (P(best).bestStreak || 0) >= 3 ? `<div class="award">🔥 <span>Найдовша серія</span><b>${nickOf(best)} · ${P(best).bestStreak}</b></div>` : ''; })()}
+    </div>
+    ${IS_HOST ? `<button class="btn" id="btnAgain">🔄 Ще одна гра</button><button class="btn ghost small" id="btnLobby">⚙️ Змінити налаштування</button>`
+      : `<div class="status"><span class="dots"><i></i><i></i><i></i></span> ${nickOf(S.host)} може запустити ще одну гру</div>`}`;
+  if (IS_HOST) {
+    $('#btnAgain', st).onclick = () => dispatch({ k: 'start' });
+    $('#btnLobby', st).onclick = () => dispatch({ k: 'lobby' });
+  }
+  const fxKey = 'fx:' + CODE;
+  if (store.get(fxKey, '') !== S.game + ':final') {
+    store.set(fxKey, S.game + ':final');
+    setTimeout(() => { confetti(true); setTimeout(() => confetti(true), 700); }, 300);
+  }
+}
+
+/* --- live patches & ticking clock --- */
+function patchStage() {
+  const st = $('#stage');
+  if (S.phase === 'lobby') {
+    const sl = $('#slots', st); if (sl) sl.innerHTML = slotsHTML();
+    ['setCount', 'setTimer'].forEach((id) => {
+      const box = $('#' + id, st); if (!box) return;
+      const v = id === 'setCount' ? S.settings.count : S.settings.timer;
+      $$('button', box).forEach((b) => b.classList.toggle('on', +b.dataset.v === v));
+    });
+    const start = $('#btnStart', st), hint = $('#startHint', st);
+    if (start) {
+      const n = S.order.filter(isOnline).length;
+      start.disabled = n < 2;
+      hint.textContent = n < 2 ? 'Потрібно щонайменше 2 гравці' : `У грі ${n} ${n === 1 ? 'гравець' : 'гравці'} — можна починати!`;
+    }
+  }
+  if (S.phase === 'question') {
+    const box = $('#answered', st);
+    if (box) box.innerHTML = S.order.filter((pid) => isOnline(pid) || S.q.answers[pid]).map((pid) =>
+      `<span class="a ${S.q.answers[pid] ? 'done' : ''}">${ava(P(pid).avatar, 'sm')}<span class="ck">✓</span></span>`).join('');
+    const fifty = (S.q.fifty && S.q.fifty[PID]) || [];
+    $$('#opts .opt', st).forEach((b) => b.classList.toggle('gone', fifty.includes(+b.dataset.i)));
+  }
+  if (S.phase === 'reveal') {
+    const row = $('#readyrow', st);
+    if (row) row.innerHTML = S.order.filter(isOnline).map((pid) => `<span class="${S.ready[pid] ? 'done' : ''}">${ava(P(pid).avatar, 'xs')}${S.ready[pid] ? '✓' : ''}</span>`).join('');
+  }
+}
+let lastTick = -1;
+function tick() {
+  requestAnimationFrame(tick);
+  if (VIEW !== 'room' || !S) return;
+  const now = hostNow();
+  if (S.phase === 'question') {
+    const q = S.q;
+    const intro = $('#intro'), wrap = $('#qwrap');
+    if (!intro || !wrap) return;
+    const inIntro = now < q.startAt;
+    intro.classList.toggle('hidden', !inIntro);
+    if (wrap.classList.contains('show') === inIntro) wrap.classList.toggle('show', !inIntro);
+    const total = q.endAt - q.startAt;
+    const left = Math.max(0, Math.min(total, q.endAt - now));
+    const bar = $('#timer i'); if (bar) bar.style.transform = `scaleX(${left / total})`;
+    const secs = Math.ceil(left / 1000);
+    const ts = $('#tsec');
+    if (ts && ts.textContent !== String(secs)) {
+      ts.textContent = secs;
+      const low = secs <= 5;
+      ts.classList.toggle('low', low); $('#timer').classList.toggle('low', low);
+      if (low && secs > 0 && !inIntro && !q.answers[PID] && secs !== lastTick) { lastTick = secs; vibrate(10); }
+    }
+  } else if (S.phase === 'reveal') {
+    const nb = $('#nextbar');
+    if (nb && S.autoAt) nb.style.transform = `scaleX(${Math.max(0, Math.min(1, (S.autoAt - now) / REVEAL_MS))})`;
+  }
+}
+requestAnimationFrame(tick);
+
+/* ---------- menu ---------- */
+function openMenu() {
+  const inGame = S.phase === 'question' || S.phase === 'reveal';
+  openSheet(`
+    <h3>Меню</h3>
+    <div class="card" style="padding:14px"><div class="lbl">Гравці</div>${slotsHTML()}</div>
+    <button class="btn sky" id="mInvite">🔗 Запросити ще когось</button>
+    <button class="btn ghost" id="mProfile">🎨 Змінити героя</button>
+    ${IS_HOST && inGame ? '<button class="btn ghost" id="mEnd">🏁 Завершити гру зараз</button>' : ''}
+    <button class="btn ghost" id="mLeave">🚪 Вийти з кімнати</button>`, (b) => {
+    $('#mInvite', b).onclick = () => { closeSheet(); shareInvite(); };
+    $('#mProfile', b).onclick = openProfileSheet;
+    const end = $('#mEnd', b);
+    if (end) end.onclick = () => { if (confirm('Завершити гру й показати результати?')) { closeSheet(); dispatch({ k: 'end' }); } };
+    $('#mLeave', b).onclick = () => { closeSheet(); leaveRoom(); };
+  });
+}
+function openProfileSheet() {
+  openSheet(`<h3>Твій герой</h3><div id="sheetEd"></div><button class="btn" id="saveProf">Зберегти</button>`, (b) => {
+    const get = mountEditor($('#sheetEd', b), ME_PROFILE, null);
+    $('#saveProf', b).onclick = () => {
+      ME_PROFILE = get(); store.set('profile', ME_PROFILE);
+      dispatch({ k: 'profile', nick: ME_PROFILE.nick, avatar: ME_PROFILE.avatar });
+      closeSheet(); toast('Герой оновлений ✨');
+    };
+  });
+}
+
+/* reactions */
+$('#react').innerHTML = REACTIONS.map((e) => `<button type="button" data-e="${e}" aria-label="${e}">${e}</button>`).join('');
+$('#react').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button'); if (!b) return;
+  floatEmoji(b.dataset.e, PID);
+  if (IS_HOST) Net.broadcast({ t: 'emoji', e: b.dataset.e, pid: PID });
+  else Net.send({ t: 'emoji', e: b.dataset.e, pid: PID });
+});
+
+/* =========================================================
+   Host-side game logic (господар — єдине джерело правди)
+   ========================================================= */
+function newState(code) {
+  return {
+    app: 'erudyt', code, v: 1, game: 0, phase: 'lobby', host: PID,
+    settings: { count: 10, timer: 20 },
+    players: { [PID]: newPlayer(ME_PROFILE) }, order: [PID], online: [PID],
+    plan: [], qi: 0, q: null, ready: {}, autoAt: 0, history: [],
+  };
+}
+function newPlayer(p) {
+  return { nick: String(p.nick || 'Гравець').slice(0, 16), avatar: p.avatar || {}, score: 0, fifty: false, streak: 0, bestStreak: 0, right: 0 };
+}
+function makePlan(count) {
+  const used = new Set(store.get('used', []));
+  const nHard = Math.round(count * 0.25), nEasy = Math.round(count * 0.4), nMed = count - nHard - nEasy;
+  const plan = [];
+  [[1, nEasy], [2, nMed], [3, nHard]].forEach(([d, n]) => {
+    let pool = Q.map((q, i) => i).filter((i) => Q[i][0] === d);
+    let fresh = pool.filter((i) => !used.has(i));
+    if (fresh.length < n) { pool.forEach((i) => used.delete(i)); fresh = pool; }
+    // намагаємось не ставити поруч дві однакові категорії
+    const picked = [];
+    for (const i of shuffle(fresh)) {
+      if (picked.length >= n) break;
+      if (picked.length && Q[picked[picked.length - 1]][1] === Q[i][1] && fresh.length > n * 2) continue;
+      picked.push(i);
+    }
+    for (const i of shuffle(fresh)) { if (picked.length >= n) break; if (!picked.includes(i)) picked.push(i); }
+    plan.push(...picked);
+  });
+  plan.forEach((i) => used.add(i));
+  store.set('used', Array.from(used));
+  return plan;
+}
+function beginQuestion(s) {
+  const id = s.plan[s.qi];
+  const [d, cat, text, opts, fact] = Q[id];
+  const order = shuffle([0, 1, 2, 3]);
+  const now = Date.now();
+  s.q = {
+    id, d, cat, text, fact: fact || '', options: order.map((k) => opts[k]), correct: order.indexOf(0),
+    startAt: now + INTRO_MS, endAt: now + INTRO_MS + s.settings.timer * 1000,
+    final: s.qi === s.plan.length - 1, answers: {}, fifty: {}, results: null,
+  };
+  s.phase = 'question'; s.ready = {}; s.autoAt = 0;
+}
+function closeQuestion(s) {
+  const q = s.q, total = s.settings.timer * 1000;
+  q.results = {};
+  s.order.forEach((pid) => {
+    const a = q.answers[pid], pl = s.players[pid];
+    const ok = !!a && a.i === q.correct;
+    const base = 100 * q.d;
+    const bonus = ok ? Math.round(base * 0.5 * Math.max(0, 1 - a.ms / total)) : 0;
+    const pts = ok ? (base + bonus) * (q.final ? 2 : 1) : 0;
+    pl.score += pts;
+    pl.streak = ok ? pl.streak + 1 : 0;
+    pl.bestStreak = Math.max(pl.bestStreak || 0, pl.streak);
+    if (ok) pl.right = (pl.right || 0) + 1;
+    q.results[pid] = { ok, pts, bonus, i: a ? a.i : null, ms: a ? a.ms : null };
+  });
+  s.history.push({ id: q.id, results: q.results });
+  s.phase = 'reveal';
+  s.autoAt = Date.now() + REVEAL_MS;
+}
+function advance(s) {
+  if (s.qi + 1 >= s.plan.length) { s.phase = 'final'; s.q = null; return; }
+  s.qi++;
+  beginQuestion(s);
+}
+const onlineList = () => S.order.filter(isOnline);
+
+function hostAct(pid, a) {   // повертає true, якщо стан змінився
+  const s = S, pl = s.players[pid];
+  if (!pl) return false;
+  switch (a.k) {
+    case 'settings':
+      if (pid !== s.host || (s.phase !== 'lobby' && s.phase !== 'final')) return false;
+      if ([10, 15, 20].includes(a.count)) s.settings.count = a.count;
+      if ([15, 20, 30].includes(a.timer)) s.settings.timer = a.timer;
+      return true;
+    case 'start':
+      if (pid !== s.host || onlineList().length < 2) return false;
+      s.order = s.order.filter((p) => isOnline(p));   // хто пішов до старту — не грає
+      s.order.forEach((p) => { Object.assign(s.players[p], { score: 0, fifty: false, streak: 0, bestStreak: 0, right: 0 }); });
+      s.game++; s.plan = makePlan(s.settings.count); s.qi = 0; s.history = [];
+      beginQuestion(s);
+      return true;
+    case 'lobby':
+      if (pid !== s.host) return false;
+      s.phase = 'lobby'; s.q = null;
+      return true;
+    case 'answer': {
+      if (s.phase !== 'question' || s.q.answers[pid]) return false;
+      const now = Date.now();
+      if (now < s.q.startAt - 500 || now > s.q.endAt + 1500) return false;
+      if (!(a.i >= 0 && a.i < 4)) return false;
+      const total = s.settings.timer * 1000;
+      const ms = now > s.q.endAt ? total : Math.min(total, Math.max(0, +a.ms || 0));
+      s.q.answers[pid] = { i: a.i, ms };
+      if (onlineList().every((p) => s.q.answers[p])) { const qi = s.qi; setTimeout(() => { if (S.phase === 'question' && S.qi === qi) { closeQuestion(S); commit(); } }, 700); }
+      return true;
+    }
+    case 'fifty': {
+      if (s.phase !== 'question' || pl.fifty || s.q.answers[pid]) return false;
+      const wrong = shuffle([0, 1, 2, 3].filter((i) => i !== s.q.correct)).slice(0, 2);
+      s.q.fifty[pid] = wrong; pl.fifty = true;
+      return true;
+    }
+    case 'ready':
+      if (s.phase !== 'reveal' || s.ready[pid]) return false;
+      s.ready[pid] = true;
+      if (onlineList().every((p) => s.ready[p])) advance(s);
+      return true;
+    case 'end':
+      if (pid !== s.host || (s.phase !== 'question' && s.phase !== 'reveal')) return false;
+      s.phase = 'final'; s.q = null;
+      return true;
+    case 'profile':
+      pl.nick = String(a.nick || '').slice(0, 16) || pl.nick;
+      pl.avatar = a.avatar || pl.avatar;
+      return true;
+  }
+  return false;
+}
+let hostTimer = null;
+function scheduleHost() {
+  clearTimeout(hostTimer);
+  if (!IS_HOST || !S) return;
+  let at = 0, fn = null;
+  if (S.phase === 'question') { at = S.q.endAt + 400; fn = () => closeQuestion(S); }
+  else if (S.phase === 'reveal') { at = S.autoAt; fn = () => advance(S); }
+  if (!fn) return;
+  const ph = S.phase, qi = S.qi;
+  hostTimer = setTimeout(() => { if (S && S.phase === ph && S.qi === qi) { fn(); commit(); } }, Math.max(0, at - Date.now()));
+}
+function setOnline() {   // господар: хто зараз на зв’язку
+  const list = [PID, ...Array.from(Net.conns.keys())];
+  const changed = list.length !== (S.online || []).length || list.some((p) => !S.online.includes(p));
+  S.online = list;
+  return changed;
+}
+
+function dispatch(a) {
+  if (!S) return false;
+  if (IS_HOST) { if (hostAct(PID, a)) commit(); return true; }
+  if (!Net.conn) { toast('Немає зв’язку… зачекай секунду 🔌'); return false; }
+  Net.send({ t: 'act', a });
+  return true;
+}
+function persist() {
+  if (!S) return;
+  store.set('state:' + CODE, S);
+  store.set('lastRoom', { hash: location.hash, code: CODE });
+}
+function commit() {   // тільки господар
+  S.v++;
+  persist();
+  Net.broadcast({ t: 'state', s: S });
+  scheduleHost();
+  render();
+}
+
+/* =========================================================
+   Network (PeerJS / WebRTC). Зірка: усі гості з’єднані з господарем.
+   ========================================================= */
+const Net = {
+  peer: null, conn: null, pending: null, conns: new Map(), seen: new Map(),
+  lastSeen: 0, visibleAt: 0, offset: 0, bestRtt: Infinity,
+  hostAway: false, full: false, status: 'Підключаємося до мережі…', retryT: null, connectT: null, hb: null,
+  ready() { return !!(this.peer && this.peer.open); },
+  opts() {
+    const ps = new URLSearchParams(location.search).get('ps');   // для локального тесту: ?ps=localhost:9000
+    if (ps) { const [host, port] = ps.split(':'); return { host, port: +port || 9000, path: '/', secure: false, debug: 1 }; }
+    return { debug: 1 };
+  },
+  send(m) { if (this.conn && this.conn.open) { try { this.conn.send(m); } catch (e) {} } },
+  sendTo(pid, m) { const c = this.conns.get(pid); if (c && c.open) { try { c.send(m); } catch (e) {} } },
+  broadcast(m, except) { this.conns.forEach((c, pid) => { if (pid !== except && c.open) { try { c.send(m); } catch (e) {} } }); },
+
+  start() { this.makePeer(); clearInterval(this.hb); this.hb = setInterval(() => this.heartbeat(), 3000); },
+  stop() {
+    clearInterval(this.hb); clearTimeout(this.retryT); clearTimeout(this.connectT);
+    const p = this.peer; this.peer = null; this.conn = null; this.pending = null; this.conns.clear(); this.seen.clear();
+    if (p) try { p.destroy(); } catch (e) {}
+  },
+  makePeer() {
+    clearTimeout(this.retryT);
+    if (this.peer) { const old = this.peer; this.peer = null; try { old.destroy(); } catch (e) {} }
+    this.status = 'Підключаємося до мережі…';
+    const p = IS_HOST ? new Peer(PREFIX + CODE, this.opts()) : new Peer(this.opts());
+    this.peer = p;
+    p.on('open', () => { if (p !== this.peer) return; this.status = 'Онлайн'; if (!IS_HOST) this.connect(); render(); });
+    p.on('connection', (c) => { if (p !== this.peer) return; if (!IS_HOST) { c.close(); return; } this.attachGuest(c); });
+    p.on('disconnected', () => {
+      if (p !== this.peer) return;
+      this.status = 'Зв’язок із мережею перервався…'; render();
+      this.retryT = setTimeout(() => { if (p === this.peer && !p.destroyed && p.disconnected) { try { p.reconnect(); } catch (e) { this.makePeer(); } } }, 1500);
+    });
+    p.on('error', (err) => {
+      if (p !== this.peer) return;
+      const t = err && err.type;
+      if (t === 'peer-unavailable') { this.hostAway = true; this.pending = null; render(); this.scheduleConnect(3000); return; }
+      if (t === 'browser-incompatible') { this.status = 'Цей браузер не підтримує гру 😕 Спробуй Safari або Chrome'; render(); return; }
+      this.status = t === 'unavailable-id' ? 'Відкриваємо кімнату…' : 'Проблеми зі зв’язком, пробуємо ще…';
+      render();
+      this.retryT = setTimeout(() => {
+        if (p !== this.peer) return;
+        if (p.destroyed || t === 'unavailable-id') this.makePeer();
+        else if (p.disconnected) { try { p.reconnect(); } catch (e) { this.makePeer(); } }
+        else if (!IS_HOST && !this.conn) this.connect();
+      }, 2500);
+    });
+  },
+
+  /* --- host side --- */
+  attachGuest(c) {
+    c.on('data', (d) => {
+      if (!d || typeof d !== 'object') return;
+      if (d.t === 'hello') { this.onHello(c, d); return; }
+      const pid = c._pid;
+      if (!pid || this.conns.get(pid) !== c) return;
+      this.seen.set(pid, Date.now());
+      if (d.t === 'ping') { try { c.send({ t: 'pong', c: d.c, h: Date.now() }); } catch (e) {} return; }
+      onHostMessage(pid, d);
+    });
+    const gone = () => {
+      const pid = c._pid;
+      if (pid && this.conns.get(pid) === c) {
+        this.conns.delete(pid); this.seen.delete(pid);
+        if (S && setOnline()) {
+          if (S.phase === 'question' && onlineList().every((p) => S.q.answers[p])) closeQuestion(S);
+          else if (S.phase === 'reveal' && onlineList().every((p) => S.ready[p])) advance(S);
+          commit();
+        }
+      }
+    };
+    c.on('close', gone); c.on('error', gone);
+  },
+  onHello(c, d) {
+    const pid = String(d.pid || '').slice(0, 24);
+    if (!pid || pid === PID || !d.profile) { c.close(); return; }
+    const known = !!S.players[pid];
+    if (!known && S.order.length >= MAX_PLAYERS) {
+      // місце звільняємо лише за рахунок гравця, якого немає онлайн і хто ще не грав
+      const freeable = S.phase === 'lobby' ? S.order.find((p) => p !== S.host && !isOnline(p)) : null;
+      if (!freeable) { try { c.send({ t: 'full' }); } catch (e) {} setTimeout(() => c.close(), 300); return; }
+      S.order = S.order.filter((p) => p !== freeable); delete S.players[freeable];
+    }
+    const old = this.conns.get(pid);
+    if (old && old !== c) { old._pid = null; try { old.close(); } catch (e) {} }
+    c._pid = pid;
+    this.conns.set(pid, c);
+    this.seen.set(pid, Date.now());
+    if (!known) { S.players[pid] = newPlayer(d.profile); S.order.push(pid); }
+    else { S.players[pid].nick = String(d.profile.nick || S.players[pid].nick).slice(0, 16); S.players[pid].avatar = d.profile.avatar || S.players[pid].avatar; }
+    setOnline();
+    commit();
+    toast(known ? `${esc(S.players[pid].nick)} повертається 👋` : `${esc(S.players[pid].nick)} у грі! 🎉`);
+  },
+
+  /* --- guest side --- */
+  scheduleConnect(ms) { clearTimeout(this.connectT); this.connectT = setTimeout(() => this.connect(), ms); },
+  connect() {
+    if (IS_HOST || this.conn || this.full) return;
+    const p = this.peer;
+    if (!p || p.destroyed) { this.makePeer(); return; }
+    if (p.disconnected) { try { p.reconnect(); } catch (e) { this.makePeer(); return; } this.scheduleConnect(2000); return; }
+    if (!p.open) { this.scheduleConnect(1000); return; }
+    if (this.pending) { try { this.pending.close(); } catch (e) {} }
+    const c = p.connect(PREFIX + CODE, { reliable: true, serialization: 'json' });
+    this.pending = c;
+    c.on('open', () => {
+      if (this.conn && this.conn !== c) { try { this.conn.close(); } catch (e) {} }
+      this.conn = c; this.pending = null; this.lastSeen = Date.now(); this.hostAway = false;
+      c.send({ t: 'hello', pid: PID, profile: ME_PROFILE });
+      c.send({ t: 'ping', c: Date.now() });
+      render();
+    });
+    c.on('data', (d) => { if (this.conn !== c) return; this.lastSeen = Date.now(); onGuestMessage(d); });
+    const gone = () => {
+      if (this.pending === c) this.pending = null;
+      if (this.conn !== c) return;
+      this.conn = null; render();
+      this.scheduleConnect(700);
+    };
+    c.on('close', gone); c.on('error', gone);
+    setTimeout(() => { if (this.pending === c && !c.open) { this.pending = null; try { c.close(); } catch (e) {} this.scheduleConnect(1500); } }, 9000);
+  },
+  kill() {
+    const c = this.conn; this.conn = null;
+    if (c) try { c.close(); } catch (e) {}
+    render();
+    this.scheduleConnect(200);
+  },
+  heartbeat() {
+    if (IS_HOST) {
+      const now = Date.now();
+      this.seen.forEach((t, pid) => { if (now - Math.max(t, this.visibleAt) > 12000) { const c = this.conns.get(pid); if (c) try { c.close(); } catch (e) {} } });
+      return;
+    }
+    if (!this.conn) return;
+    this.send({ t: 'ping', c: Date.now() });
+    if (Date.now() - Math.max(this.lastSeen, this.visibleAt) > 10000) this.kill();
+  },
+  wake() {
+    this.visibleAt = Date.now();
+    const p = this.peer;
+    if (!p) return;
+    if (p.destroyed) { this.makePeer(); return; }
+    if (p.disconnected) { try { p.reconnect(); } catch (e) { this.makePeer(); } }
+    if (IS_HOST) { scheduleHost(); return; }
+    if (this.conn) {
+      const since = Date.now();
+      this.send({ t: 'ping', c: since });
+      setTimeout(() => { if (this.conn && this.lastSeen < since) this.kill(); }, 3500);
+    } else this.connect();
+  },
+};
+
+function onHostMessage(pid, m) {
+  switch (m.t) {
+    case 'act':
+      if (hostAct(pid, m.a || {})) commit();
+      else Net.sendTo(pid, { t: 'state', s: S });
+      return;
+    case 'emoji':
+      if (!REACTIONS.includes(m.e)) return;
+      floatEmoji(m.e, pid);
+      Net.broadcast({ t: 'emoji', e: m.e, pid }, pid);
+      return;
+  }
+}
+function onGuestMessage(m) {
+  if (!m || typeof m !== 'object') return;
+  switch (m.t) {
+    case 'pong': {
+      const now = Date.now(), rtt = now - m.c;
+      if (rtt >= 0 && rtt <= Net.bestRtt * 1.5 + 30) { Net.offset = m.h + rtt / 2 - now; Net.bestRtt = Math.min(Net.bestRtt, rtt); }
+      return;
+    }
+    case 'state':
+      if (!m.s || m.s.code !== CODE) return;
+      {
+        const was = S;
+        S = m.s; persist();
+        if (!was || !was.players[PID]) toast('Ти в грі! 🦉');
+        render();
+      }
+      return;
+    case 'emoji':
+      if (REACTIONS.includes(m.e)) { floatEmoji(m.e, m.pid); vibrate(20); }
+      return;
+    case 'full':
+      Net.full = true; render();
+      return;
+  }
+}
+
+/* =========================================================
+   Flow
+   ========================================================= */
+function render() {
+  if (!CODE) return;
+  if (!S || (!IS_HOST && !S.players[PID])) renderConnect();
+  else renderRoom();
+}
+function createRoom() {
+  CODE = randomCode();
+  IS_HOST = true;
+  HOST_NICK = ME_PROFILE.nick;
+  store.set('hosted:' + CODE, true);
+  S = newState(CODE);
+  history.replaceState(null, '', '#r=' + CODE + '&n=' + encodeURIComponent(ME_PROFILE.nick));
+  persist();
+  enterRoom();
+}
+function enterRoom() {
+  VIEW = null; lastStageKey = null; Net.full = false; Net.hostAway = false;
+  if (IS_HOST) {
+    if (!S) S = newState(CODE);
+    if (!S.players[PID]) { S.players[PID] = newPlayer(ME_PROFILE); S.order.unshift(PID); }
+    S.host = PID;
+    S.players[PID].nick = ME_PROFILE.nick; S.players[PID].avatar = ME_PROFILE.avatar;
+    S.online = [PID];
+    scheduleHost();
+  }
+  render();
+  Net.start();
+}
+function leaveRoom() {
+  Net.stop();
+  clearTimeout(hostTimer);
+  CODE = null; S = null; IS_HOST = false; HOST_NICK = '';
+  history.replaceState(null, '', location.pathname + location.search);
+  VIEW = null;
+  renderHome();
+}
+function parseHash() {
+  const p = new URLSearchParams(location.hash.slice(1));
+  return { code: (p.get('r') || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 16), nick: (p.get('n') || '').slice(0, 16) };
+}
+function boot() {
+  Net.stop();
+  clearTimeout(hostTimer);
+  VIEW = null;
+  const { code, nick } = parseHash();
+  if (!code) { CODE = null; S = null; renderHome(); return; }
+  CODE = code; HOST_NICK = nick;
+  IS_HOST = !!store.get('hosted:' + code, false);
+  S = store.get('state:' + code, null);
+  if (S && S.code !== code) S = null;
+  if (ME_PROFILE && (IS_HOST || S)) enterRoom();
+  else renderHome();
+}
+window.addEventListener('hashchange', boot);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && CODE) Net.wake(); });
+window.addEventListener('pageshow', (e) => { if (e.persisted && CODE) Net.wake(); });
+
+if (typeof Peer === 'undefined') {
+  document.getElementById('app').innerHTML = '<div class="card wait"><h2>Не вдалося завантажити гру 😕</h2><p class="muted">Перевір інтернет і онови сторінку.</p></div>';
+} else {
+  boot();
+}
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {}); });
+}
+
+</script>
+</body>
+</html>
