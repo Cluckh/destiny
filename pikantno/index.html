@@ -1,0 +1,1641 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Пікантно</title>
+<meta name="description" content="Гра 18+ для двох: відверті питання, сміливі завдання й спільні відкриття.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#160f26">
+<meta property="og:title" content="Пікантно 🌶️ (18+)">
+<meta property="og:description" content="Гра для двох дорослих. Заходь, якщо не боїшся відвертих питань 😏">
+<meta property="og:image" content="https://cluckh.github.io/destiny/pikantno/og.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Пікантно">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Unbounded:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#1d1530; --panel:#2d2142; --panel-2:#3a2a52; --line:#4b3866; --shadow:#150e22;
+  --cream:#fff2de; --muted:#c4afc7; --ink:#2a1608;
+  --pumpkin:#f08a3c; --pumpkin-d:#b5591c;
+  --mustard:#f4b942; --mustard-d:#b78220;
+  --sage:#93b977; --sage-d:#5d7f46;
+  --berry:#e35a72; --berry-d:#9e2f46;
+  --sky:#7fb7d9; --sky-d:#45799c;
+  --spring:cubic-bezier(.3,1.55,.55,1);
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{
+  min-height:100dvh;background:var(--night);color:var(--cream);
+  font-family:'Nunito',system-ui,-apple-system,sans-serif;font-weight:700;font-size:16px;line-height:1.4;
+  -webkit-tap-highlight-color:transparent;overflow-x:hidden;-webkit-font-smoothing:antialiased;
+}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+h1,h2,h3,.disp{font-family:'Unbounded',system-ui,sans-serif;margin:0;letter-spacing:-.01em}
+.hidden{display:none!important}
+.muted{color:var(--muted);font-weight:600}
+.center{text-align:center}
+
+/* ---------- evening sky ---------- */
+.sky{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+  background:
+    radial-gradient(130% 55% at 50% 112%, #d0602e 0%, #9a4126 20%, rgba(106,44,51,0) 58%),
+    linear-gradient(180deg,#191330 0%,#2a1a3f 42%,#46223f 72%,#652b35 100%);}
+.stars{position:absolute;inset:0 0 40% 0;opacity:.75;
+  background-image:
+    radial-gradient(1.6px 1.6px at 12% 18%,#fff 50%,transparent 51%),
+    radial-gradient(1.2px 1.2px at 28% 8%,#ffe9c7 50%,transparent 51%),
+    radial-gradient(1.4px 1.4px at 44% 26%,#fff 50%,transparent 51%),
+    radial-gradient(1px 1px at 61% 12%,#fff 50%,transparent 51%),
+    radial-gradient(1.8px 1.8px at 72% 30%,#ffe9c7 50%,transparent 51%),
+    radial-gradient(1.2px 1.2px at 90% 16%,#fff 50%,transparent 51%),
+    radial-gradient(1px 1px at 6% 40%,#fff 50%,transparent 51%),
+    radial-gradient(1.3px 1.3px at 36% 44%,#fff 50%,transparent 51%),
+    radial-gradient(1px 1px at 82% 48%,#ffe9c7 50%,transparent 51%),
+    radial-gradient(1.5px 1.5px at 54% 38%,#fff 50%,transparent 51%);
+  animation:twinkle 6s ease-in-out infinite alternate}
+@keyframes twinkle{from{opacity:.45}to{opacity:.9}}
+.moon{position:absolute;top:7%;right:9%;width:74px;height:74px;border-radius:50%;
+  background:radial-gradient(circle at 38% 36%,#fff6e4,#f6d9a8 60%,#e9bd7c);
+  box-shadow:0 0 40px 12px rgba(255,214,150,.22),0 0 120px 40px rgba(255,170,90,.12)}
+.moon::after{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:rgba(200,150,90,.25);top:22px;left:40px;box-shadow:-18px 18px 0 -3px rgba(200,150,90,.2)}
+.hills{position:absolute;left:0;right:0;bottom:0;width:100%;height:24vh}
+.leaves{position:absolute;inset:0}
+.leaf{position:absolute;top:-40px;will-change:transform;animation:fall linear infinite}
+.leaf svg{display:block;animation:sway ease-in-out infinite alternate}
+@keyframes fall{to{transform:translateY(112vh)}}
+@keyframes sway{from{transform:translateX(-22px) rotate(-35deg)}to{transform:translateX(22px) rotate(40deg)}}
+
+/* ---------- layout ---------- */
+#app{position:relative;z-index:1;max-width:480px;margin:0 auto;min-height:100dvh;
+  padding:calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 96px)}
+.screen{display:flex;flex-direction:column;gap:16px}
+.enter>*{animation:rise .55s var(--ease) both}
+.enter>*:nth-child(2){animation-delay:.06s}.enter>*:nth-child(3){animation-delay:.12s}
+.enter>*:nth-child(4){animation-delay:.18s}.enter>*:nth-child(5){animation-delay:.24s}
+.enter>*:nth-child(6){animation-delay:.3s}.enter>*:nth-child(7){animation-delay:.36s}
+@keyframes rise{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes pop{0%{opacity:0;transform:scale(.55)}60%{opacity:1;transform:scale(1.07)}100%{transform:scale(1)}}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px) rotate(-2deg)}40%{transform:translateX(8px) rotate(2deg)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+@keyframes wiggle{0%,100%{transform:translateX(0) rotate(0)}50%{transform:translateX(-6px) rotate(-12deg)}}
+.pop{animation:pop .6s var(--spring) both}
+.bob{animation:bob 2.6s ease-in-out infinite}
+.shake{animation:shake .5s ease both}
+
+/* ---------- blocks ---------- */
+.card{background:var(--panel);border:3px solid var(--line);border-radius:22px;padding:18px;
+  box-shadow:0 7px 0 var(--shadow),0 18px 34px rgba(0,0,0,.35)}
+.lbl{display:block;font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px}
+input[type=text],textarea{width:100%;border:3px solid var(--line);background:#231936;border-radius:14px;
+  padding:13px 14px;font-size:17px;font-weight:800;outline:none;transition:border-color .2s,box-shadow .2s;color:var(--cream)}
+textarea{resize:none;min-height:88px;line-height:1.35}
+input::placeholder,textarea::placeholder{color:#8d7896;font-weight:700}
+input:focus,textarea:focus{border-color:var(--pumpkin);box-shadow:0 0 0 4px rgba(240,138,60,.2)}
+
+.btn{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
+  font-family:'Unbounded',sans-serif;font-weight:700;font-size:17px;letter-spacing:.01em;
+  border:0;border-radius:18px;padding:17px 20px;color:var(--ink);
+  --b:var(--pumpkin);--bd:var(--pumpkin-d);background:var(--b);
+  box-shadow:0 6px 0 var(--bd),0 12px 20px rgba(0,0,0,.35);
+  transition:transform .14s var(--spring),box-shadow .14s,filter .2s,opacity .2s}
+.btn::before{content:'';position:absolute;left:12px;right:12px;top:6px;height:9px;border-radius:9px;background:rgba(255,255,255,.3);pointer-events:none}
+.btn:active:not(:disabled){transform:translateY(5px);box-shadow:0 1px 0 var(--bd),0 4px 8px rgba(0,0,0,.3)}
+.btn:disabled{filter:grayscale(.7) brightness(.75);cursor:default}
+.btn.mustard{--b:var(--mustard);--bd:var(--mustard-d)}
+.btn.sage{--b:var(--sage);--bd:var(--sage-d)}
+.btn.sky{--b:var(--sky);--bd:var(--sky-d)}
+.btn.ghost{--b:var(--panel-2);--bd:var(--shadow);color:var(--cream)}
+.btn.ghost::before{background:rgba(255,255,255,.07)}
+.btn.small{font-size:14px;padding:12px 14px;border-radius:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>.btn{flex:1}
+.chip{border:0;border-radius:999px;padding:9px 14px;background:var(--panel-2);font-weight:800;font-size:14px;
+  box-shadow:0 4px 0 var(--shadow);transition:transform .14s var(--spring),box-shadow .14s}
+.chip:active{transform:translateY(3px);box-shadow:0 1px 0 var(--shadow)}
+.tag{display:inline-block;font-family:'Unbounded';font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  background:rgba(244,185,66,.16);color:var(--mustard);padding:6px 10px;border-radius:999px}
+
+/* ---------- avatar ---------- */
+.ava{flex:none;border-radius:22%;background:radial-gradient(circle at 50% 30%,#4a3866,#2b1f40);overflow:hidden;
+  border:3px solid var(--line);box-shadow:0 5px 0 var(--shadow)}
+.ava svg{display:block;width:100%;height:100%}
+.ava.xs{width:34px;height:34px;border-width:2px;box-shadow:0 3px 0 var(--shadow)}
+.ava.sm{width:46px;height:46px}
+.ava.md{width:64px;height:64px}
+.ava.lg{width:96px;height:96px}
+.ava.xl{width:124px;height:124px;border-radius:28px}
+
+/* ---------- home ---------- */
+.logo{text-align:center;padding:14px 0 2px}
+.logo-badge{width:66px;height:66px;margin:0 auto 12px;display:grid;place-items:center;font-size:36px;border-radius:20px;
+  background:var(--mustard);box-shadow:0 6px 0 var(--mustard-d),0 14px 26px rgba(0,0,0,.35);transform:rotate(-8deg);animation:bob 3.2s ease-in-out infinite}
+.logo h1{font-size:40px;font-weight:800;line-height:.98;text-shadow:0 4px 0 rgba(0,0,0,.3)}
+.logo h1 span{color:var(--pumpkin);display:inline-block;transform:rotate(-3deg)}
+.logo p{margin:12px auto 0;max-width:300px}
+.invite{display:flex;gap:12px;align-items:center;background:linear-gradient(135deg,#5a2c4a,#3a2552);border-color:#7a4466}
+.invite .ico{font-size:30px;animation:wiggle 1.6s ease-in-out infinite}
+
+.ed-top{display:flex;gap:16px;align-items:center}
+.ed-side{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+.ed-side .chip{align-self:flex-start}
+.tabs{display:flex;gap:6px;margin:18px 0 12px;background:#231936;padding:5px;border-radius:16px}
+.tabs button{flex:1;border:0;background:transparent;padding:9px 4px;border-radius:12px;font-size:13px;font-weight:800;color:var(--muted);transition:background .25s var(--ease),color .25s}
+.tabs button.on{background:var(--panel-2);color:var(--cream);box-shadow:0 3px 0 var(--shadow)}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.grid button{aspect-ratio:1;border:3px solid transparent;border-radius:16px;background:#231936;padding:3px;transition:transform .2s var(--spring),border-color .2s}
+.grid button svg{width:100%;height:100%;display:block}
+.grid button.on{border-color:var(--pumpkin);transform:scale(1.06);background:#3b2850}
+.grid button:active{transform:scale(.92)}
+.swatch{display:block;width:100%;height:100%;border-radius:11px;box-shadow:inset 0 -6px 0 rgba(0,0,0,.18),inset 0 4px 0 rgba(255,255,255,.25)}
+.ava-pop{animation:pop .45s var(--spring)}
+
+/* ---------- lobby ---------- */
+.versus{display:flex;align-items:center;justify-content:space-around;gap:8px;padding:8px 0}
+.versus .slot{display:flex;flex-direction:column;align-items:center;gap:10px;width:42%}
+.versus .slot b{font-family:'Unbounded';font-size:15px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.versus .vs{font-family:'Unbounded';font-weight:800;color:var(--mustard);font-size:20px;transform:rotate(-8deg)}
+.empty-slot{width:96px;height:96px;border-radius:22%;border:3px dashed #6b5590;display:grid;place-items:center;font-family:'Unbounded';font-size:34px;color:#8e78b2;animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.06);opacity:1}}
+.status{display:flex;align-items:center;gap:10px;justify-content:center;font-size:14px;color:var(--muted);font-weight:700}
+.spin{width:18px;height:18px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:var(--pumpkin);animation:spin .8s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.linkbox{font-size:13px;color:var(--muted);background:#231936;border-radius:12px;padding:10px 12px;word-break:break-all;font-weight:700}
+
+/* ---------- game top ---------- */
+.top{display:flex;align-items:center;gap:8px}
+.pl{flex:1;min-width:0;display:flex;align-items:center;gap:9px;background:var(--panel);border:3px solid var(--line);border-radius:18px;padding:7px 10px 7px 7px;box-shadow:0 5px 0 var(--shadow);position:relative;transition:border-color .3s}
+.pl.right{flex-direction:row-reverse;padding:7px 7px 7px 10px;text-align:right}
+.pl.turn{border-color:var(--mustard)}
+.pl .meta{min-width:0;flex:1}
+.pl .nm{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl .sc{font-family:'Unbounded';font-weight:800;font-size:19px;line-height:1.1;display:inline-block}
+.pl .sc.bump{animation:pop .55s var(--spring)}
+.pl .dot{position:absolute;top:-4px;width:13px;height:13px;border-radius:50%;background:#7c6a86;border:3px solid var(--night)}
+.pl:not(.right) .dot{left:-4px}.pl.right .dot{right:-4px}
+.pl .dot.on{background:#7ee08a;box-shadow:0 0 10px #7ee08a}
+.pl .role{position:absolute;bottom:-9px;font-size:15px}
+.pl:not(.right) .role{left:34px}.pl.right .role{right:34px}
+.menu-btn{flex:none;width:44px;height:44px;border-radius:14px;border:0;background:var(--panel-2);box-shadow:0 5px 0 var(--shadow);font-size:20px;font-weight:900}
+.banner{border-radius:14px;padding:10px 14px;font-size:14px;display:flex;gap:10px;align-items:center;background:rgba(227,90,114,.18);border:2px solid rgba(227,90,114,.4);animation:rise .4s var(--ease)}
+
+/* ---------- stage ---------- */
+#stage{display:flex;flex-direction:column;gap:16px}
+.stage-head{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.stage-head h2{font-size:26px;font-weight:800;line-height:1.1}
+.stage-head p{margin:0}
+.qcard{display:flex;gap:14px;align-items:flex-start}
+.qcard .who{font-size:13px;color:var(--muted);font-weight:800;margin-bottom:3px}
+.qtext{font-family:'Unbounded';font-weight:600;font-size:19px;line-height:1.3;word-wrap:break-word;overflow-wrap:anywhere}
+.opts{display:flex;flex-direction:column;gap:12px}
+.opt{--c:var(--pumpkin);position:relative;display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  padding:13px 14px;border-radius:18px;border:3px solid transparent;background:var(--panel-2);
+  box-shadow:0 5px 0 var(--shadow);font-weight:800;font-size:17px;line-height:1.25;
+  transition:transform .3s var(--spring),background .25s,border-color .25s,box-shadow .2s,opacity .3s}
+.opt .let{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex:none;font-family:'Unbounded';font-size:15px;
+  background:var(--c);color:var(--ink);box-shadow:inset 0 -4px 0 rgba(0,0,0,.18)}
+.opt .tx{flex:1;min-width:0;overflow-wrap:anywhere}
+.opt:active:not(:disabled){transform:scale(.97)}
+.opt.sel{border-color:var(--c);transform:scale(1.03);background:#4a3466}
+.opt.right{background:var(--sage);color:var(--ink);border-color:#c8e6b0}
+.opt.right .let{background:#fff2de}
+.opt.wrong{background:var(--berry);color:var(--ink)}
+.opt.dim{opacity:.45}
+.opt:disabled{cursor:default}
+.opt .badge{font-size:12px;font-weight:900;padding:4px 8px;border-radius:999px;background:rgba(147,185,119,.22);color:var(--sage);white-space:nowrap}
+.opt.right .badge{background:rgba(42,22,8,.15);color:var(--ink)}
+.finger{position:absolute;right:-6px;top:50%;font-size:30px;margin-top:-20px;opacity:0;transform:scale(.4);transition:opacity .2s,transform .3s var(--spring);pointer-events:none;filter:drop-shadow(0 3px 0 rgba(0,0,0,.3))}
+.opt.sel .finger{opacity:1;transform:scale(1);animation:wiggle .9s ease-in-out infinite}
+
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.seg button{border:3px solid transparent;border-radius:16px;background:#231936;padding:10px 4px 9px;display:flex;flex-direction:column;align-items:center;gap:1px;
+  box-shadow:0 4px 0 var(--shadow);transition:transform .25s var(--spring),border-color .2s,background .2s}
+.seg button .e{font-size:24px}
+.seg button b{font-family:'Unbounded';font-size:17px}
+.seg button small{font-size:12px;color:var(--muted);font-weight:800}
+.seg button.on{border-color:var(--mustard);background:#3f2c4f;transform:translateY(-3px)}
+
+.optedit{--c:var(--pumpkin);display:flex;gap:9px;align-items:center;margin-bottom:10px;animation:rise .35s var(--ease) both}
+.optedit .mark{width:46px;height:46px;flex:none;border-radius:14px;border:3px solid var(--c);background:transparent;display:grid;place-items:center;
+  font-family:'Unbounded';font-size:15px;color:var(--c);transition:transform .25s var(--spring),background .2s,color .2s}
+.optedit.ok .mark{background:var(--sage);border-color:var(--sage);color:var(--ink);transform:rotate(-8deg) scale(1.05)}
+.optedit input{flex:1;min-width:0}
+.optedit .rm{width:34px;height:34px;flex:none;border-radius:10px;border:0;background:transparent;color:#8d7896;font-size:18px}
+.hint{font-size:13px;color:var(--muted);margin:2px 0 12px}
+.err{color:#ff9aa9;font-size:14px;font-weight:800;min-height:20px;text-align:center;margin-top:-6px}
+
+.wait{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:28px 18px}
+.wait h2{font-size:21px;line-height:1.2}
+.typing{display:inline-flex;align-items:center;gap:8px;font-weight:800;color:var(--mustard);min-height:24px;transition:opacity .25s}
+.typing.off{opacity:0}
+.dots{display:inline-flex;gap:4px}
+.dots i{width:7px;height:7px;border-radius:50%;background:currentColor;animation:dot 1s infinite ease-in-out}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-6px);opacity:1}}
+
+.result{text-align:center;border-radius:24px;padding:20px 16px;color:var(--ink);box-shadow:0 7px 0 var(--sage-d),0 18px 30px rgba(0,0,0,.35);background:var(--sage)}
+.result.bad{background:var(--berry);box-shadow:0 7px 0 var(--berry-d),0 18px 30px rgba(0,0,0,.35)}
+.result .big{font-family:'Unbounded';font-weight:800;font-size:30px;line-height:1.05}
+.result .delta{font-family:'Unbounded';font-weight:800;font-size:22px;margin-top:6px}
+.result .sub{font-weight:800;margin-top:6px;font-size:15px;opacity:.85}
+.story-text{font-size:17px;font-weight:700;font-style:italic;min-height:24px;overflow-wrap:anywhere}
+.story-text.empty{color:#8d7896;font-style:normal}
+
+.mirror-banner{font-family:'Unbounded';font-weight:800;font-size:22px;text-align:center;padding:14px;border-radius:20px;
+  background:linear-gradient(135deg,#7fb7d9,#b8a1f2);color:var(--ink);box-shadow:0 6px 0 #4d5f9c,0 14px 26px rgba(0,0,0,.35)}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.duo .card{padding:14px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px}
+.duo .nm{font-family:'Unbounded';font-size:14px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.duo .k{font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.duo .v{font-weight:900;font-size:15px}
+.pill{display:inline-block;font-family:'Unbounded';font-size:13px;padding:5px 10px;border-radius:999px;background:var(--sage);color:var(--ink)}
+.pill.no{background:var(--berry)}
+.meter{height:16px;border-radius:999px;background:#231936;overflow:hidden;box-shadow:inset 0 3px 0 rgba(0,0,0,.25)}
+.meter i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--pumpkin),var(--mustard));transition:width 1.2s var(--ease)}
+.donecheck{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.donecheck span{display:inline-flex;align-items:center;gap:7px;background:#231936;border-radius:999px;padding:5px 12px 5px 5px;font-size:14px}
+
+/* reactions */
+.react{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 14px);transform:translateX(-50%);z-index:5;display:flex;gap:4px;
+  background:rgba(45,33,66,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:3px solid var(--line);border-radius:999px;padding:5px;box-shadow:0 6px 0 var(--shadow)}
+.react button{width:44px;height:44px;border:0;border-radius:50%;background:transparent;font-size:24px;transition:transform .2s var(--spring)}
+.react button:active{transform:scale(1.35)}
+.react .chat-btn{position:relative;background:rgba(240,138,60,.18)}
+.react .cnt{position:absolute;top:0;right:0;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:var(--berry);color:#fff;font:900 11px/19px Nunito,sans-serif;animation:pop .4s var(--spring)}
+.chat-list{display:flex;flex-direction:column;gap:9px;max-height:52dvh;min-height:120px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 2px}
+.chat-empty{margin:auto;color:var(--muted);text-align:center;font-weight:700;padding:20px}
+.msg{display:flex;gap:8px;align-items:flex-end;max-width:85%;animation:rise .3s var(--ease) both}
+.msg.me{align-self:flex-end}
+.msg .b{background:var(--panel-2);padding:9px 13px 7px;border-radius:18px 18px 18px 6px;font-weight:700;overflow-wrap:anywhere;line-height:1.35}
+.msg.me .b{background:var(--pumpkin);color:var(--ink);border-radius:18px 18px 6px 18px}
+.msg .b small{display:block;font-size:11px;opacity:.6;margin-top:2px;text-align:right;font-weight:800}
+.chat-in{display:flex;gap:8px;align-items:center}
+.chat-in input{flex:1;min-width:0}
+.chat-in .btn{width:58px;flex:none;font-size:20px;padding:13px 0}
+.tmsg{display:inline-flex;align-items:center;gap:9px;text-align:left}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:30;overflow:hidden}
+.float{position:absolute;bottom:80px;font-size:44px;will-change:transform,opacity}
+.confetti{position:absolute;top:40%;left:50%;font-size:26px;will-change:transform,opacity}
+
+.help p{margin:0 0 8px;font-size:15px;font-weight:700}
+.help .diag{font-size:13px;color:var(--muted);background:#231936;border-radius:12px;padding:9px 12px;margin:6px 0 12px;font-weight:800}
+/* toast & sheet */
+#toasts{position:fixed;top:calc(env(safe-area-inset-top) + 12px);left:0;right:0;z-index:40;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 16px}
+.toast{background:var(--cream);color:var(--ink);font-weight:900;border-radius:16px;padding:11px 16px;box-shadow:0 5px 0 #c9b28f,0 12px 24px rgba(0,0,0,.35);max-width:440px;text-align:center;animation:pop .45s var(--spring) both}
+.toast.out{animation:toastout .35s var(--ease) forwards}
+@keyframes toastout{to{opacity:0;transform:translateY(-12px) scale(.95)}}
+.sheet{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet-bg{position:absolute;inset:0;background:rgba(10,6,18,.6);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);animation:fade .3s both}
+@keyframes fade{from{opacity:0}}
+.sheet-body{position:relative;width:100%;max-width:480px;max-height:88dvh;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--panel);border:3px solid var(--line);border-bottom:0;
+  border-radius:28px 28px 0 0;padding:22px 16px calc(env(safe-area-inset-bottom) + 22px);display:flex;flex-direction:column;gap:14px;animation:sheetup .45s var(--ease) both}
+@keyframes sheetup{from{transform:translateY(100%)}}
+.sheet.closing .sheet-body{animation:sheetdown .3s var(--ease) forwards}.sheet.closing .sheet-bg{animation:fade .3s reverse forwards}
+@keyframes sheetdown{to{transform:translateY(100%)}}
+.grab{width:44px;height:5px;border-radius:5px;background:var(--line);margin:-8px auto 2px}
+.sheet h3{font-size:20px}
+.dos-sec{display:flex;flex-direction:column;gap:10px}
+.dos-head{display:flex;align-items:center;gap:10px;font-family:'Unbounded';font-size:15px}
+.fact{background:#231936;border-radius:16px;padding:12px 14px}
+.fact .q{font-weight:800}
+.fact .a{color:var(--pumpkin);font-weight:900;margin-top:3px}
+.fact .s{color:var(--muted);font-style:italic;margin-top:4px;font-weight:600}
+.fact .m{font-size:13px;color:var(--muted);margin-top:4px}
+.scoreline{display:flex;align-items:center;justify-content:center;gap:16px;font-family:'Unbounded';font-weight:800;font-size:30px}
+.coin{width:120px;height:120px;border-radius:50%;margin:10px auto;display:grid;place-items:center;font-size:54px;background:radial-gradient(circle at 35% 30%,#ffe7a3,#f4b942 55%,#b78220);
+  box-shadow:0 8px 0 #8a5f12,0 20px 40px rgba(0,0,0,.45);animation:flip 1.4s var(--ease) both}
+@keyframes flip{0%{transform:rotateY(0) translateY(0)}50%{transform:rotateY(900deg) translateY(-60px)}100%{transform:rotateY(1800deg) translateY(0)}}
+.imgprev{width:100%;border-radius:16px;display:block}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .leaves{display:none}
+}
+@media (max-width:360px){
+  .logo h1{font-size:34px}.stage-head h2{font-size:22px}.ava.xl{width:104px;height:104px}.grid{gap:7px}
+}
+
+/* ---------- Пікантно: вечір із вином ---------- */
+.sky{background:
+    radial-gradient(130% 55% at 50% 112%, #b83a55 0%, #7a2444 22%, rgba(80,24,52,0) 58%),
+    linear-gradient(180deg,#160f26 0%,#2a1236 42%,#46163e 72%,#5e1d3a 100%)}
+.moon{background:radial-gradient(circle at 38% 36%,#ffeef0,#f6c6cf 60%,#e79aab);box-shadow:0 0 40px 12px rgba(255,170,190,.22),0 0 120px 40px rgba(227,90,114,.14)}
+.logo-badge.spicy{background:var(--berry);box-shadow:0 6px 0 var(--berry-d),0 14px 26px rgba(0,0,0,.35)}
+.logo h1 span{color:var(--berry)}
+.btn.berry{--b:var(--berry);--bd:var(--berry-d)}
+.sc small{font-size:13px;margin-left:2px}
+.gate{display:flex;gap:12px;align-items:flex-start;cursor:pointer;font-weight:700;font-size:15px;line-height:1.4}
+.gate input{position:absolute;opacity:0;pointer-events:none}
+.gate .box{flex:none;width:30px;height:30px;border-radius:10px;border:3px solid var(--berry);display:grid;place-items:center;color:transparent;font-weight:900;transition:background .2s,color .2s,transform .3s var(--spring)}
+.gate input:checked + .box{background:var(--berry);color:var(--ink);transform:rotate(-8deg) scale(1.06)}
+.lvl{display:inline-flex;align-items:center;gap:5px;font-family:'Unbounded';font-size:11px;font-weight:700;letter-spacing:.04em;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.1);white-space:nowrap}
+.lvl.l2{background:rgba(240,138,60,.22)}.lvl.l3{background:rgba(227,90,114,.28)}
+.decks{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px}
+.deck{position:relative;border:0;background:none;padding:0;aspect-ratio:.68;animation:rise .55s var(--ease) both}
+.deck .stack,.deck .face{position:absolute;inset:0;border-radius:20px}
+.deck .stack{background:var(--dc);opacity:.45;transform:translate(6px,8px) rotate(4deg);box-shadow:0 6px 0 rgba(0,0,0,.25)}
+.deck .face{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:linear-gradient(160deg,var(--dc),color-mix(in srgb,var(--dc) 55%,#1d1530));color:var(--ink);
+  box-shadow:0 7px 0 rgba(0,0,0,.35),inset 0 0 0 3px rgba(255,255,255,.25);transition:transform .35s var(--spring)}
+.deck .de{font-size:38px}.deck b{font-family:'Unbounded';font-size:15px}.deck small{font-size:11.5px;font-weight:800;opacity:.75;text-align:center;padding:0 6px;line-height:1.2}
+.deck:active .face{transform:scale(.95)}
+.deck.picked .face{transform:translateY(-18px) rotate(-4deg) scale(1.06)}
+.deck:disabled:not(.picked){opacity:.5}
+.d-t{--dc:#e35a72}.d-d{--dc:#f08a3c}.d-j{--dc:#b8a1f2}
+.pcard{position:relative;background:linear-gradient(160deg,color-mix(in srgb,var(--c) 22%,var(--panel)),var(--panel));border:3px solid var(--c);border-radius:26px;padding:20px 18px 22px;
+  box-shadow:0 8px 0 var(--shadow),0 20px 36px rgba(0,0,0,.4)}
+.pcard.flip{animation:flipin .75s var(--spring) both}
+@keyframes flipin{from{transform:perspective(900px) rotateY(-100deg) scale(.85);opacity:0}to{transform:perspective(900px) rotateY(0) scale(1);opacity:1}}
+.pcard.small{padding:14px 16px}.pcard.small .ptext{font-size:17px;margin:10px 0 0}
+.ptop{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.ptype{display:inline-flex;align-items:center;gap:7px;font-family:'Unbounded';font-size:13px;font-weight:700;background:var(--c);color:var(--ink);padding:7px 12px;border-radius:999px}
+.ptext{font-family:'Unbounded';font-weight:600;font-size:22px;line-height:1.3;margin:18px 0 4px;overflow-wrap:anywhere}
+.psub{color:var(--muted);font-weight:800;margin-top:8px}
+.jopts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.jopts.t-r{grid-template-columns:repeat(5,1fr);gap:8px}
+.jopt{border:3px solid transparent;border-radius:18px;background:var(--panel-2);padding:18px 10px;font-weight:900;font-size:17px;box-shadow:0 5px 0 var(--shadow);
+  display:flex;flex-direction:column;align-items:center;gap:4px;transition:transform .3s var(--spring),border-color .2s,background .2s;animation:rise .45s var(--ease) both}
+.jopts.t-r .jopt{padding:14px 2px}
+.jopt b{font-family:'Unbounded';font-size:20px}.jopt small{font-size:10px;letter-spacing:-1px}
+.jopt.sel{border-color:var(--berry);background:#5a2a4a;transform:scale(1.05)}
+.jopt:active:not(:disabled){transform:scale(.95)}
+.duo .ans{font-size:16px;font-family:'Unbounded';font-weight:700}
+.ask{display:flex;flex-direction:column;gap:12px;padding:14px;border-color:var(--berry);background:linear-gradient(135deg,#4a1f40,#2d2142)}
+.ask .chip{align-self:flex-start}
+#ask{display:contents}
+.award{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:2px solid #3a2a52;font-size:15px}
+.award:last-child{border-bottom:0}
+.award span{flex:1;color:var(--muted);font-weight:700}
+.award b{font-weight:900;text-align:right}
+</style>
+</head>
+<body>
+<div class="sky" aria-hidden="true">
+  <div class="stars"></div>
+  <div class="moon"></div>
+  <svg class="hills" viewBox="0 0 400 120" preserveAspectRatio="none">
+    <path d="M0 64 Q50 34 110 56 T230 50 T330 44 T400 52 V120 H0Z" fill="#2a1030"/>
+    <path d="M0 88 Q70 62 150 82 T300 76 T400 80 V120 H0Z" fill="#1a0b22"/>
+  </svg>
+  <div class="leaves" id="leaves"></div>
+</div>
+
+<main id="app">
+  <section id="scr-home" class="screen hidden"></section>
+  <section id="scr-connect" class="screen hidden"></section>
+  <section id="scr-lobby" class="screen hidden"></section>
+  <section id="scr-game" class="screen hidden">
+    <header class="top" id="top"></header>
+    <div id="banner"></div>
+    <div id="ask"></div>
+    <div id="stage"></div>
+  </section>
+</main>
+<div class="react hidden" id="react"></div>
+<div id="sheet" class="sheet hidden"><div class="sheet-bg"></div><div class="sheet-body"></div></div>
+<div id="toasts"></div>
+<div id="fx"></div>
+
+<script src="./mqtt.min.js"></script>
+<script src="./relay.js"></script>
+<script>
+'use strict';
+/* =========================================================
+   Пікантно — гра 18+ для двох; зв’язок через relay.js (MQTT-брокери)
+   Господар кімнати (A) тримає стан гри, гість (B) надсилає дії.
+   ========================================================= */
+
+/* ---------- utils ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const clone = (o) => JSON.parse(JSON.stringify(o));
+const rnd = (n) => Math.floor(Math.random() * n);
+const pick = (arr) => arr[rnd(arr.length)];
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('pk:' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('pk:' + k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem('pk:' + k); } catch (e) {} },
+};
+function throttle(fn, ms) {
+  let last = 0, timer = null, lastArgs;
+  return (...args) => {
+    lastArgs = args;
+    const now = Date.now();
+    if (now - last >= ms) { last = now; fn(...args); }
+    else if (!timer) timer = setTimeout(() => { timer = null; last = Date.now(); fn(...lastArgs); }, ms - (now - last));
+  };
+}
+
+
+const NICKS = ['Перчик', 'Вишенька', 'Полуничка', 'Котик', 'Лис', 'Іскорка', 'Вогник', 'Персик', 'Мармеладка', 'Тигр', 'Шоколадка', 'Карамелька'];
+const REACTIONS = ['😂', '😳', '🥵', '😏', '🔥', '💋'];
+
+/* ---------- deck ----------
+   [рівень 1–3, тип, текст, варіанти для «або-або»]
+   t — правда, d — дія, n — було / не було, w — або-або, r — оціни 1–5, h — хто з нас */
+const LEVELS = { 1: ['🍷', 'Флірт'], 2: ['🔥', 'Гаряче'], 3: ['🌶️', 'Перчинка'] };
+const TYPES = {
+  t: ['💬', 'Правда', '#e35a72'], d: ['⚡', 'Дія', '#f08a3c'], n: ['🙈', 'Було чи не було?', '#7fb7d9'],
+  w: ['⚖️', 'Або-або', '#93b977'], r: ['🌡️', 'Оціни від 1 до 5', '#f4b942'], h: ['👀', 'Хто з нас?', '#b8a1f2'],
+};
+const DECK = [
+  // ---------- 🍷 Флірт ----------
+  [1, 't', 'Що ти помічаєш у людині першим, коли вона тобі подобається?'],
+  [1, 't', 'Який комплімент тобі запам’ятався найбільше?'],
+  [1, 't', 'Опиши своє ідеальне перше побачення.'],
+  [1, 't', 'Що миттєво розчаровує тебе на побаченні?'],
+  [1, 't', 'Що для тебе привабливіше: розум, почуття гумору чи впевненість?'],
+  [1, 't', 'Скільки тобі було років на першому побаченні? Як воно пройшло?'],
+  [1, 't', 'Яка пісня в тебе асоціюється із закоханістю?'],
+  [1, 't', 'Що в мені тобі сподобалося найпершим?'],
+  [1, 't', 'Чи траплялося з тобою кохання з першого погляду?'],
+  [1, 't', 'Яку найромантичнішу річ хтось для тебе робив?'],
+  [1, 't', 'Як ти поводишся, коли хтось подобається, але соромно в цьому зізнатися?'],
+  [1, 't', 'Яка знаменитість здається тобі найпривабливішою?'],
+  [1, 't', 'Чи був у тебе краш на вчителя чи викладача?'],
+  [1, 't', 'Що в собі тобі подобається найбільше?'],
+  [1, 't', 'Найнезручніша ситуація на побаченні в твоєму житті?'],
+  [1, 't', 'Як ти зазвичай фліртуєш — і чи це спрацьовує?'],
+  [1, 'd', 'Запиши голосове «Привіт» найспокусливішим голосом, на який здатний твій голос.'],
+  [1, 'd', 'Надішли селфі з найзвабливішим поглядом.'],
+  [1, 'd', 'Напиши мені комплімент, від якого я почервонію.'],
+  [1, 'd', 'Опиши мене трьома словами — тільки фліртовими.'],
+  [1, 'd', 'Надішли емодзі, яке найкраще описує, що ти зараз про мене думаєш.'],
+  [1, 'd', 'Надішли фото своїх очей крупним планом.'],
+  [1, 'd', 'Напиши, з чого почалося б наше ідеальне побачення.'],
+  [1, 'd', 'Перейменуй мене в контактах на щось миле й покажи скриншот.'],
+  [1, 'd', 'Заспівай голосовим рядок із романтичної пісні.'],
+  [1, 'd', 'Напиши мені «на добраніч» так, ніби ми вже на третьому побаченні.'],
+  [1, 'n', 'Поцілунок під дощем'],
+  [1, 'n', 'Закоханість у друга чи подругу'],
+  [1, 'n', 'Побачення наосліп'],
+  [1, 'n', 'Флірт заради знижки або щоб пропустили без черги'],
+  [1, 'n', 'Любовний лист, написаний від руки'],
+  [1, 'n', 'Переписка до ранку з людиною, яка подобається'],
+  [1, 'n', 'Ревнощі через чийсь лайк'],
+  [1, 'n', 'Знайомство в застосунку для знайомств'],
+  [1, 'w', 'Що обираєш?', ['Романтична вечеря', 'Спонтанна пригода']],
+  [1, 'w', 'Де цілуватися?', ['На світанку', 'Під зорями']],
+  [1, 'w', 'Що миліше?', ['Обійми ззаду', 'Поцілунок у лоб']],
+  [1, 'w', 'Як фліртувати?', ['Поглядами', 'Словами']],
+  [1, 'w', 'Перше побачення —', ['Кав’ярня', 'Нічна прогулянка']],
+  [1, 'w', 'Що зачаровує більше?', ['Голос', 'Погляд']],
+  [1, 'r', 'Скільки в тобі романтики?'],
+  [1, 'r', 'Наскільки сильні в тебе ревнощі?'],
+  [1, 'r', 'Наскільки ти любиш обійми?'],
+  [1, 'r', 'Наскільки добре ти вмієш фліртувати?'],
+  [1, 'r', 'Наскільки легко тебе засоромити?'],
+  [1, 'h', 'Хто з нас перший пише після довгої паузи?'],
+  [1, 'h', 'У кого з нас більше романтики?'],
+  [1, 'h', 'Хто з нас краще фліртує?'],
+  [1, 'h', 'Хто з нас швидше закохується?'],
+  [1, 'h', 'Хто з нас більше ревнує?'],
+  [1, 'h', 'Хто з нас перший зробить комплімент сьогодні?'],
+
+  // ---------- 🔥 Гаряче ----------
+  [2, 't', 'Що тебе найбільше заводить у людині, крім зовнішності?'],
+  [2, 't', 'Яке місце на тілі для поцілунку здається тобі найсексуальнішим?'],
+  [2, 't', 'Опиши найкращий поцілунок у своєму житті.'],
+  [2, 't', 'Що ти вдягаєш, коли хочеш почуватися неймовірно привабливо?'],
+  [2, 't', 'Яке твоє найсміливіше повідомлення комусь?'],
+  [2, 't', 'Яка риса характеру здається тобі найсексуальнішою?'],
+  [2, 't', 'Який аромат на іншій людині зводить тебе з розуму?'],
+  [2, 't', 'Що роззброює тебе миттєво: шепіт на вухо, дотик до руки чи погляд?'],
+  [2, 't', 'Які слова від коханої людини тобі найприємніше чути?'],
+  [2, 't', 'Найромантичніше місце, де трапився твій поцілунок?'],
+  [2, 't', 'Що в мені здається тобі найпривабливішим?'],
+  [2, 't', 'Як ти показуєш, що хочеш поцілунку?'],
+  [2, 't', 'Яка фантазія про побачення в тебе є, але ще не здійснилась?'],
+  [2, 't', 'Що тобі подобається більше: коли ініціатива твоя чи коли тебе завойовують?'],
+  [2, 't', 'Який найгарячіший сон тобі снився (без імен 😉)?'],
+  [2, 'd', 'Опиши в повідомленні, яким був би наш перший поцілунок.'],
+  [2, 'd', 'Надішли фото, на якому ти собі дуже подобаєшся.'],
+  [2, 'd', 'Прошепочи в голосовому щось, від чого в мене побіжать мурашки.'],
+  [2, 'd', 'Напиши три речі, які хочеш зробити зі мною на побаченні.'],
+  [2, 'd', 'Надішли пісню, під яку хочеться повільно танцювати разом.'],
+  [2, 'd', 'Зроби селфі з закушеною губою.'],
+  [2, 'd', 'Опиши наш ідеальний вечір лише емодзі.'],
+  [2, 'd', 'Розкажи, що на тобі зараз, — якомога звабливіше.'],
+  [2, 'd', 'Запиши голосове, де ти повільно вимовляєш моє ім’я.'],
+  [2, 'd', 'Опиши свій ідеальний поцілунок рівно десятьма словами.'],
+  [2, 'd', 'Постав мені будь-яке пікантне питання — я відповідаю чесно.'],
+  [2, 'd', 'Вигадай слово-пароль, яке я маю прошепотіти тобі при зустрічі.'],
+  [2, 'n', 'Поцілунок із незнайомцем'],
+  [2, 'n', 'Курортний роман'],
+  [2, 'n', 'Флірт на роботі чи навчанні'],
+  [2, 'n', 'Пікантне повідомлення, надіслане не тій людині'],
+  [2, 'n', 'Танець, який перетворився на поцілунок'],
+  [2, 'n', 'Дуже гарячий сон про когось знайомого'],
+  [2, 'n', 'Поцілунок у публічному місці на очах у всіх'],
+  [2, 'n', 'Роман на відстані'],
+  [2, 'n', 'Ночівля в людини після першого побачення'],
+  [2, 'w', 'Які поцілунки?', ['Повільні й ніжні', 'Пристрасні']],
+  [2, 'w', 'Атмосфера —', ['Свічки', 'Повна темрява']],
+  [2, 'w', 'Що заводить більше?', ['Шепіт на вухо', 'Погляд через усю кімнату']],
+  [2, 'w', 'Що обираєш?', ['Ранок разом', 'Ніч разом']],
+  [2, 'w', 'Що обираєш?', ['Ванна з піною', 'Душ удвох']],
+  [2, 'w', 'Що сексуальніше?', ['Мереживо', 'Шовк']],
+  [2, 'w', 'Масаж —', ['Спини', 'Ніг']],
+  [2, 'r', 'Скільки в тобі пристрасті?'],
+  [2, 'r', 'Наскільки тобі подобаються поцілунки в шию?'],
+  [2, 'r', 'Наскільки сміливими бувають твої нічні повідомлення?'],
+  [2, 'r', 'Наскільки тобі важливі дотики?'],
+  [2, 'r', 'Наскільки ти любиш брати ініціативу?'],
+  [2, 'h', 'Хто з нас першим поцілує при зустрічі?'],
+  [2, 'h', 'Хто з нас пристрасніше цілується?'],
+  [2, 'h', 'Хто з нас більше любить ніжності?'],
+  [2, 'h', 'Хто з нас довше протримається без флірту?'],
+  [2, 'h', 'Хто з нас сміливіше пише вночі?'],
+  [2, 'h', 'Хто з нас швидше почервоніє в цій грі?'],
+
+  // ---------- 🌶️ Перчинка ----------
+  [3, 't', 'Яка в тебе є фантазія, про яку досі ніхто не знає?'],
+  [3, 't', 'Про яке незвичне місце для пристрасті ти мрієш?'],
+  [3, 't', 'Що обов’язково має бути в ідеальній ночі?'],
+  [3, 't', 'Що найбільше заводить тебе в прелюдії?'],
+  [3, 't', 'Що для тебе абсолютне табу?'],
+  [3, 't', 'Яка твоя найчутливіша зона?'],
+  [3, 't', 'Що тобі хочеться спробувати хоча б раз у житті?'],
+  [3, 't', 'Тобі більше подобається вести чи підкорятися?'],
+  [3, 't', 'Що найсексуальніше людина може сказати в ліжку?'],
+  [3, 't', 'Що миттєво вимикає тебе в інтимі?'],
+  [3, 't', 'Як ти ставишся до рольових ігор?'],
+  [3, 't', 'Яка сцена з фільму здалася тобі найгарячішою?'],
+  [3, 't', 'Яку білизну ти вважаєш найсексуальнішою?'],
+  [3, 't', 'Що тобі хотілося б спробувати зі мною? (можна пропустити 😉)'],
+  [3, 't', 'Найсміливіше, що траплялося з тобою в ліжку?'],
+  [3, 'd', 'Опиши трьома реченнями нашу ідеальну спільну ніч.'],
+  [3, 'd', 'Запиши голосове, де ти пошепки розповідаєш, що хочеш зі мною зробити.'],
+  [3, 'd', 'Напиши найпікантніше повідомлення, яке тільки зможеш, — але зі смаком.'],
+  [3, 'd', 'Надішли фото частини тіла, яку вважаєш у себе найсексуальнішою (лише те, що комфортно).'],
+  [3, 'd', 'Розкажи свою фантазію лише за допомогою емодзі.'],
+  [3, 'd', 'Опиши, з чого почався б наш вечір, якби ми зараз були поруч.'],
+  [3, 'd', 'Обери, що я маю вдягнути на наше наступне побачення.'],
+  [3, 'd', 'Напиши три слова, які спадають на думку, коли уявляєш мене поруч.'],
+  [3, 'd', 'Надішли фото своїх губ.'],
+  [3, 'd', 'Придумай мені пікантне завдання на наше наступне побачення.'],
+  [3, 'n', 'Секс на першому побаченні'],
+  [3, 'n', 'Відверті фото комусь'],
+  [3, 'n', 'Секс у машині'],
+  [3, 'n', 'Покупка в секс-шопі (а не просто екскурсія)'],
+  [3, 'n', 'Рольова гра в ліжку'],
+  [3, 'n', 'Секс на природі'],
+  [3, 'n', 'Еротичний масаж'],
+  [3, 'n', 'Фільм для дорослих разом із партнером'],
+  [3, 'n', 'Секс у душі'],
+  [3, 'n', 'Пов’язка на очі або наручники'],
+  [3, 'w', 'Що обираєш?', ['Ранок', 'Ніч']],
+  [3, 'w', 'Як?', ['Ніжно', 'Пристрасно']],
+  [3, 'w', 'Що ближче?', ['Вести', 'Підкорятися']],
+  [3, 'w', 'Світло —', ['Увімкнене', 'Вимкнене']],
+  [3, 'w', 'Що обираєш?', ['Тиша', 'Гучно']],
+  [3, 'w', 'Де?', ['Готель', 'Вдома']],
+  [3, 'w', 'Прелюдія —', ['Повільна й довга', 'Одразу до справи']],
+  [3, 'r', 'Наскільки ти любиш експерименти в ліжку?'],
+  [3, 'r', 'Наскільки важлива для тебе прелюдія?'],
+  [3, 'r', 'Наскільки тобі подобаються рольові ігри?'],
+  [3, 'r', 'Наскільки сильно тебе заводять слова?'],
+  [3, 'r', 'Наскільки ти любиш дражнити?'],
+  [3, 'h', 'Хто з нас першим проявить ініціативу?'],
+  [3, 'h', 'Хто з нас голосніший у ліжку?'],
+  [3, 'h', 'Хто з нас більше любить експерименти?'],
+  [3, 'h', 'Хто з нас довше витримає без дотиків?'],
+  [3, 'h', 'Хто з нас уміє довше дражнити?'],
+  [3, 'h', 'Хто з нас першим зірветься, якщо будемо поруч?'],
+];
+
+/* ---------- avatars (blocky, roblox-like) ---------- */
+const SKINS = ['#f7c873', '#f39a4f', '#ec6a5e', '#a6cf7e', '#78c3d6', '#b8a1f2', '#f5a9c4', '#d39a68', '#8d5b3d', '#efe2cb'];
+const SHIRTS = ['#e8573f', '#f0a030', '#5f9e6e', '#3f7fbf', '#8a5cc7', '#d6457a', '#2f2a3d', '#f2ead8', '#7a4a2a', '#4fb3a9'];
+const FACES = ['smile', 'grin', 'wink', 'cool', 'shy', 'wow', 'sleepy', 'silly', 'smug', 'love'];
+const HATS = ['none', 'cap', 'beanie', 'crown', 'leaf', 'pumpkin', 'headphones', 'bow', 'tophat', 'horns'];
+const INK = '#2b1a14';
+
+function faceSVG(f) {
+  const eyes = `<ellipse cx="47" cy="52" rx="4.5" ry="6.5" fill="${INK}"/><ellipse cx="73" cy="52" rx="4.5" ry="6.5" fill="${INK}"/>`;
+  const st = `stroke="${INK}" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"`;
+  switch (f) {
+    case 'grin': return eyes + `<path d="M43 63 H77 Q75 83 60 83 Q45 83 43 63Z" fill="${INK}"/><path d="M47 64 H73 V69 Q60 71 47 69Z" fill="#fff"/>`;
+    case 'wink': return `<ellipse cx="47" cy="52" rx="4.5" ry="6.5" fill="${INK}"/><path d="M66 54 Q73 46 80 54" ${st}/><path d="M46 66 Q61 78 75 64" ${st}/>`;
+    case 'cool': return `<rect x="34" y="44" width="23" height="14" rx="5" fill="${INK}"/><rect x="63" y="44" width="23" height="14" rx="5" fill="${INK}"/><path d="M56 49 H64" stroke="${INK}" stroke-width="3"/><rect x="38" y="47" width="7" height="3" rx="1.5" fill="#fff" opacity=".6"/><rect x="67" y="47" width="7" height="3" rx="1.5" fill="#fff" opacity=".6"/><path d="M50 70 Q63 75 72 65" ${st}/>`;
+    case 'shy': return `<circle cx="48" cy="53" r="4" fill="${INK}"/><circle cx="72" cy="53" r="4" fill="${INK}"/><ellipse cx="40" cy="64" rx="6.5" ry="4" fill="#ff6f91" opacity=".5"/><ellipse cx="80" cy="64" rx="6.5" ry="4" fill="#ff6f91" opacity=".5"/><path d="M54 68 Q60 73 66 68" ${st}/>`;
+    case 'wow': return `<circle cx="47" cy="51" r="6.5" fill="${INK}"/><circle cx="49" cy="49" r="2.2" fill="#fff"/><circle cx="73" cy="51" r="6.5" fill="${INK}"/><circle cx="75" cy="49" r="2.2" fill="#fff"/><ellipse cx="60" cy="71" rx="5.5" ry="7" fill="${INK}"/>`;
+    case 'sleepy': return `<path d="M41 53 Q47 58 53 53" ${st}/><path d="M67 53 Q73 58 79 53" ${st}/><path d="M55 70 Q60 73 65 70" ${st}/><text x="80" y="42" font-family="Arial" font-size="13" font-weight="900" fill="${INK}" opacity=".55">z</text>`;
+    case 'silly': return eyes + `<path d="M46 65 Q60 75 74 65" ${st}/><path d="M56 70 Q55 81 61 81 Q67 81 66 70Z" fill="#ff6f91" stroke="${INK}" stroke-width="2.5"/>`;
+    case 'smug': return `<path d="M41 50 H53" ${st}/><path d="M67 50 H79" ${st}/><ellipse cx="48" cy="54" rx="4" ry="3.5" fill="${INK}"/><ellipse cx="74" cy="54" rx="4" ry="3.5" fill="${INK}"/><path d="M50 69 Q64 72 74 63" ${st}/>`;
+    case 'love': return `<path d="M47 58 l-7 -7 a4 4 0 0 1 7 -5 a4 4 0 0 1 7 5z" fill="#e35a72"/><path d="M73 58 l-7 -7 a4 4 0 0 1 7 -5 a4 4 0 0 1 7 5z" fill="#e35a72"/><path d="M46 66 Q60 78 74 66" ${st}/>`;
+    default: return eyes + `<path d="M46 66 Q60 78 74 66" ${st}/>`;
+  }
+}
+function hatSVG(h) {
+  switch (h) {
+    case 'cap': return `<path d="M25 42 Q25 13 60 13 Q95 13 95 42 Z" fill="#d6457a"/><path d="M25 42 Q25 13 60 13 Q66 13 70 14 Q48 18 44 42Z" fill="#fff" opacity=".18"/><rect x="58" y="35" width="50" height="9" rx="4.5" fill="#9c2f55"/><circle cx="60" cy="14" r="3.5" fill="#9c2f55"/>`;
+    case 'beanie': return `<path d="M23 42 Q23 8 60 8 Q97 8 97 42Z" fill="#f0a030"/><path d="M40 14 V36 M52 10 V36 M68 10 V36 M80 14 V36" stroke="#c77f1a" stroke-width="3"/><rect x="21" y="32" width="78" height="13" rx="6.5" fill="#c77f1a"/><circle cx="60" cy="8" r="7.5" fill="#f2ead8"/>`;
+    case 'crown': return `<path d="M32 32 L35 8 L47 21 L60 4 L73 21 L85 8 L88 32 Z" fill="#f6c443" stroke="#b9831c" stroke-width="3" stroke-linejoin="round"/><circle cx="60" cy="24" r="3.8" fill="#e8573f"/><circle cx="45" cy="27" r="2.6" fill="#3f7fbf"/><circle cx="75" cy="27" r="2.6" fill="#5f9e6e"/>`;
+    case 'leaf': return `<g transform="translate(82 20) rotate(28)"><path d="M0 -17 C10 -10 13 0 0 15 C-13 0 -10 -10 0 -17Z" fill="#e8673a"/><path d="M0 -13 V19" stroke="#9c3f1f" stroke-width="2.4" stroke-linecap="round"/><path d="M0 -3 L6 -8 M0 4 L-6 -1" stroke="#9c3f1f" stroke-width="1.8" stroke-linecap="round"/></g><g transform="translate(66 18) rotate(-20) scale(.7)"><path d="M0 -17 C10 -10 13 0 0 15 C-13 0 -10 -10 0 -17Z" fill="#f4b942"/><path d="M0 -13 V17" stroke="#b78220" stroke-width="2.4"/></g>`;
+    case 'pumpkin': return `<ellipse cx="60" cy="23" rx="35" ry="16" fill="#f08a3c"/><path d="M47 9 Q42 23 47 38 M73 9 Q78 23 73 38 M60 7 V39" stroke="#c4621f" stroke-width="3" fill="none"/><rect x="56" y="0" width="8" height="11" rx="3" fill="#5f7a3c"/><path d="M64 4 Q74 0 76 8" stroke="#5f7a3c" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    case 'headphones': return `<path d="M26 55 Q26 12 60 12 Q94 12 94 55" stroke="#2f2a3d" stroke-width="7" fill="none" stroke-linecap="round"/><rect x="15" y="44" width="17" height="27" rx="7" fill="#e8573f"/><rect x="88" y="44" width="17" height="27" rx="7" fill="#e8573f"/><rect x="18" y="48" width="5" height="12" rx="2.5" fill="#fff" opacity=".3"/>`;
+    case 'bow': return `<g transform="translate(42 25) rotate(-12)"><path d="M0 0 L-17 -11 Q-21 0 -17 11Z" fill="#f5a9c4" stroke="#d6457a" stroke-width="3" stroke-linejoin="round"/><path d="M0 0 L17 -11 Q21 0 17 11Z" fill="#f5a9c4" stroke="#d6457a" stroke-width="3" stroke-linejoin="round"/><circle r="5.5" fill="#d6457a"/></g>`;
+    case 'tophat': return `<rect x="24" y="25" width="72" height="9" rx="4.5" fill="#2f2a3d"/><rect x="37" y="1" width="46" height="29" rx="5" fill="#2f2a3d"/><rect x="37" y="19" width="46" height="6" fill="#e8573f"/><rect x="41" y="4" width="6" height="14" rx="3" fill="#fff" opacity=".12"/>`;
+    case 'horns': return `<path d="M33 30 Q25 12 37 4 Q37 18 47 27Z" fill="#e35a72" stroke="#9e2f46" stroke-width="2.5" stroke-linejoin="round"/><path d="M87 30 Q95 12 83 4 Q83 18 73 27Z" fill="#e35a72" stroke="#9e2f46" stroke-width="2.5" stroke-linejoin="round"/>`;
+    default: return '';
+  }
+}
+function avatarSVG(a, opt = {}) {
+  a = a || {};
+  const skin = SKINS[a.skin] || SKINS[0];
+  const shirt = SHIRTS[a.shirt] || SHIRTS[0];
+  const head = `<rect x="52" y="80" width="16" height="14" fill="${skin}"/><rect x="52" y="80" width="16" height="6" fill="#000" opacity=".12"/>
+    <rect x="26" y="24" width="68" height="62" rx="16" fill="${skin}"/>
+    <path d="M78 24 a16 16 0 0 1 16 16 v30 a16 16 0 0 1 -16 16 h-4 v-62z" fill="#000" opacity=".1"/>
+    <rect x="34" y="30" width="22" height="8" rx="4" fill="#fff" opacity=".35"/>`;
+  const body = opt.noBody ? '' : `<rect x="20" y="91" width="80" height="40" rx="14" fill="${shirt}"/><path d="M80 91 h6 a14 14 0 0 1 14 14 v26 h-20z" fill="#000" opacity=".12"/><rect x="28" y="96" width="20" height="6" rx="3" fill="#fff" opacity=".25"/>`;
+  const w = opt.size ? ` width="${opt.size}" height="${opt.size}"` : '';
+  return `<svg viewBox="0 0 120 120"${w} xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${body}${head}${faceSVG(FACES[a.face] || 'smile')}${hatSVG(HATS[a.hat] || 'none')}</svg>`;
+}
+const randomAvatar = () => ({ skin: rnd(SKINS.length), face: rnd(FACES.length), hat: rnd(HATS.length), shirt: rnd(SHIRTS.length) });
+const ava = (a, cls = 'md') => `<div class="ava ${cls}">${avatarSVG(a)}</div>`;
+
+
+/* ---------- global state ---------- */
+// герой з інших ігор переїжджає сюди автоматично
+let ME_PROFILE = store.get('profile', null) || (() => { try { return JSON.parse(localStorage.getItem('vg:profile') || localStorage.getItem('er:profile')); } catch (e) { return null; } })();
+let ROLE = null;           // 'A' — господар, 'B' — гість
+let CODE = null;
+let HOST_NICK = '';
+let S = null;
+let VIEW = null;
+let lastStageKey = null;
+const other = (r) => (r === 'A' ? 'B' : 'A');
+const P = (r) => (S && S.players[r]) || { nick: '…', avatar: {}, score: 0 };
+const nickOf = (r) => esc(P(r).nick);
+const lvlChip = (l) => `<span class="lvl l${l}">${LEVELS[l][0]} ${LEVELS[l][1]}</span>`;
+
+
+/* ---------- background leaves ---------- */
+(function leaves() {
+  const box = $('#leaves');
+  const cols = ['#e35a72', '#f5a9c4', '#c2335a', '#ff8fab', '#9e2f46', '#f7c6d0'];
+  const n = window.innerWidth < 500 ? 8 : 12;
+  for (let i = 0; i < n; i++) {
+    const s = 14 + rnd(16);
+    const el = document.createElement('div');
+    el.className = 'leaf';
+    el.style.left = rnd(100) + '%';
+    el.style.animationDuration = (11 + rnd(10)) + 's';
+    el.style.animationDelay = (-rnd(20)) + 's';
+    el.style.opacity = (0.35 + Math.random() * 0.4).toFixed(2);
+    el.innerHTML = `<svg width="${s}" height="${s}" viewBox="-12 -18 24 36" style="animation-duration:${2 + Math.random() * 2}s"><path d="M0 -17 C10 -10 13 0 0 15 C-13 0 -10 -10 0 -17Z" fill="${pick(cols)}"/><path d="M0 -13 V18" stroke="rgba(0,0,0,.3)" stroke-width="1.6"/></svg>`;
+    box.appendChild(el);
+  }
+})();
+
+/* ---------- toasts, fx, sheets ---------- */
+function toast(html, ms = 2600) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.innerHTML = html;
+  $('#toasts').appendChild(el);
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 400); }, ms);
+}
+function floatEmoji(e, mine) {
+  const el = document.createElement('div');
+  el.className = 'float';
+  el.textContent = e;
+  const x = mine ? 55 + rnd(30) : 15 + rnd(30);
+  el.style.left = x + '%';
+  $('#fx').appendChild(el);
+  const drift = (Math.random() - 0.5) * 80;
+  el.animate([
+    { transform: 'translate(-50%,0) scale(.4)', opacity: 0 },
+    { transform: `translate(calc(-50% + ${drift * 0.3}px),-90px) scale(1.25)`, opacity: 1, offset: 0.2 },
+    { transform: `translate(calc(-50% + ${drift}px),-420px) scale(1)`, opacity: 0 },
+  ], { duration: 2200, easing: 'cubic-bezier(.2,.8,.2,1)' }).onfinish = () => el.remove();
+}
+function confetti(good) {
+  const items = good ? ['❤️', '🌶️', '✨', '💋', '🔥', '💞'] : ['💨', '🙈', '😅'];
+  const n = good ? 26 : 8;
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti';
+    el.textContent = pick(items);
+    $('#fx').appendChild(el);
+    const a = Math.random() * Math.PI * 2, d = 120 + Math.random() * 200;
+    const dx = Math.cos(a) * d, dy = Math.sin(a) * d - 120;
+    el.animate([
+      { transform: 'translate(-50%,-50%) scale(.2) rotate(0)', opacity: 1 },
+      { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(1.2) rotate(${rnd(360)}deg)`, opacity: 1, offset: 0.55 },
+      { transform: `translate(calc(-50% + ${dx * 1.1}px), calc(-50% + ${dy + 260}px)) scale(.9) rotate(${rnd(720)}deg)`, opacity: 0 },
+    ], { duration: 1500 + rnd(700), easing: 'cubic-bezier(.15,.7,.3,1)' }).onfinish = () => el.remove();
+  }
+}
+let sheetHideT = null;
+function openSheet(html, onMount) {
+  const sh = $('#sheet');
+  clearTimeout(sheetHideT);
+  chatOpen = false;
+  sh.classList.remove('hidden', 'closing');
+  const body = $('.sheet-body', sh);
+  body.innerHTML = '<div class="grab"></div>' + html;
+  body.scrollTop = 0;
+  $('.sheet-bg', sh).onclick = closeSheet;
+  if (onMount) onMount(body);
+}
+function closeSheet() {
+  const sh = $('#sheet');
+  if (sh.classList.contains('hidden')) return;
+  sh.classList.add('closing');
+  chatOpen = false;
+  sheetHideT = setTimeout(() => sh.classList.add('hidden'), 300);
+  if (typeof chatBadge === 'function') chatBadge();
+}
+
+/* ---------- profile editor ---------- */
+function mountEditor(root, profile, onChange) {
+  const p = { nick: profile.nick || '', avatar: Object.assign(randomAvatar(), profile.avatar || {}) };
+  let tab = 'face';
+  root.innerHTML = `
+    <div class="ed-top">
+      <div class="ava xl" id="edAva"></div>
+      <div class="ed-side">
+        <label class="lbl" for="edNick">Твій нік</label>
+        <input type="text" id="edNick" maxlength="16" autocomplete="off" placeholder="${esc(pick(NICKS))}">
+        <button class="chip" id="edRand" type="button">🎲 Навмання</button>
+      </div>
+    </div>
+    <div class="tabs" id="edTabs">
+      <button data-t="face" class="on" type="button">Обличчя</button><button data-t="hat" type="button">Шапка</button>
+      <button data-t="skin" type="button">Колір</button><button data-t="shirt" type="button">Одяг</button>
+    </div>
+    <div class="grid" id="edGrid"></div>`;
+  const nick = $('#edNick', root);
+  nick.value = p.nick;
+  const avaEl = $('#edAva', root);
+  const drawAva = (animate) => {
+    avaEl.innerHTML = avatarSVG(p.avatar);
+    if (animate) { avaEl.classList.remove('ava-pop'); void avaEl.offsetWidth; avaEl.classList.add('ava-pop'); }
+  };
+  const drawGrid = () => {
+    const list = { face: FACES, hat: HATS, skin: SKINS, shirt: SHIRTS }[tab];
+    $('#edGrid', root).innerHTML = list.map((_, i) => {
+      let inner;
+      if (tab === 'skin' || tab === 'shirt') inner = `<span class="swatch" style="background:${list[i]}"></span>`;
+      else inner = avatarSVG(Object.assign({}, p.avatar, { [tab]: i }), { noBody: true });
+      return `<button type="button" data-i="${i}" class="${p.avatar[tab] === i ? 'on' : ''}" aria-label="${tab} ${i + 1}">${inner}</button>`;
+    }).join('');
+  };
+  const changed = () => { onChange && onChange(get()); };
+  $('#edTabs', root).addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    tab = b.dataset.t;
+    $$('#edTabs button', root).forEach((x) => x.classList.toggle('on', x === b));
+    drawGrid();
+  });
+  $('#edGrid', root).addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    p.avatar[tab] = +b.dataset.i;
+    $$('#edGrid button', root).forEach((x) => x.classList.toggle('on', x === b));
+    drawAva(true); changed();
+  });
+  $('#edRand', root).addEventListener('click', () => {
+    p.avatar = randomAvatar();
+    if (!nick.value.trim()) nick.placeholder = pick(NICKS);
+    drawAva(true); drawGrid(); changed();
+  });
+  nick.addEventListener('input', changed);
+  const get = () => ({ nick: (nick.value.trim() || nick.placeholder).slice(0, 16), avatar: clone(p.avatar) });
+  drawAva(false); drawGrid();
+  return get;
+}
+
+
+/* ---------- screens ---------- */
+function show(view) {
+  if (VIEW === view) return false;
+  VIEW = view;
+  ['home', 'connect', 'lobby', 'game'].forEach((v) => $('#scr-' + v).classList.toggle('hidden', v !== view));
+  $('#react').classList.toggle('hidden', view !== 'game');
+  window.scrollTo({ top: 0 });
+  return true;
+}
+
+function renderHome() {
+  show('home');
+  const el = $('#scr-home');
+  const last = store.get('lastRoom', null);
+  const joining = !!CODE;
+  el.className = 'screen enter';
+  el.innerHTML = `
+    <div class="logo"><div class="logo-badge spicy">🌶️</div><h1>Пікант<span>но</span></h1>
+      <p class="muted">Гра для двох дорослих: відверті питання, сміливі завдання й спільні відкриття. Будь-яку карту можна пропустити.</p></div>
+    ${joining ? `<div class="card invite"><div class="ico">💌</div><div><b>${esc(HOST_NICK || 'Хтось')}</b> кличе тебе на пікантну гру. Створи свого героя й заходь.</div></div>` : ''}
+    <div class="card" id="editor"></div>
+    <label class="card gate" id="gate">
+      <input type="checkbox" id="adult" ${store.get('adult', false) ? 'checked' : ''}>
+      <span class="box">✓</span>
+      <span><b>Мені вже є 18</b>, і я граю з власної згоди. Розумію, що будь-яку карту можна пропустити.</span>
+    </label>
+    <button class="btn berry" id="btnGo">${joining ? 'Увійти в гру ➜' : 'Створити кімнату ➜'}</button>
+    ${!joining && last ? `<button class="btn ghost small" id="btnResume">↩ Повернутись в останню гру</button>` : ''}`;
+  const get = mountEditor($('#editor', el), ME_PROFILE || {}, null);
+  const go = $('#btnGo', el), adult = $('#adult', el);
+  const sync = () => { go.disabled = !adult.checked; };
+  adult.onchange = () => { store.set('adult', adult.checked); sync(); };
+  sync();
+  go.onclick = () => {
+    if (!adult.checked) { $('#gate', el).classList.remove('shake'); void el.offsetWidth; $('#gate', el).classList.add('shake'); return; }
+    ME_PROFILE = get();
+    store.set('profile', ME_PROFILE);
+    if (joining) enterRoom(); else createRoom();
+  };
+  const r = $('#btnResume', el);
+  if (r) r.onclick = () => { location.hash = last.hash; };
+}
+
+
+function renderConnect() {
+  const first = show('connect');
+  const el = $('#scr-connect');
+  if (first) Net.since = Date.now();
+  const away = Net.hostAway;
+  const slow = Date.now() - Net.since > 15000;
+  const k = away + '|' + slow;
+  if (!first && el.dataset.k === k) {
+    const s = $('#cStatus', el); if (s && !away) s.textContent = Net.statusText();
+    const dg = $('.diag', el); if (dg) dg.outerHTML = $('.diag', (() => { const t = document.createElement('div'); t.innerHTML = connectHelpHTML(); return t; })()).outerHTML;
+    return;
+  }
+  el.dataset.k = k;
+  el.className = 'screen' + (first ? ' enter' : '');
+  el.innerHTML = `
+    <div class="logo"><div class="logo-badge spicy">🌶️</div><h1>Пікант<span>но</span></h1></div>
+    <div class="card wait">
+      <div class="ava xl bob">${avatarSVG(ME_PROFILE.avatar)}</div>
+      <h2>${away ? esc(HOST_NICK || 'Друг') + ' зараз не в грі' : 'Заходимо в гру…'}</h2>
+      <div class="status"><span class="spin"></span><span id="cStatus">${away ? 'Щойно ' + esc(HOST_NICK || 'друг') + ' відкриє гру — під\'єднаємось самі' : esc(Net.statusText())}</span></div>
+    </div>
+    ${slow ? connectHelpHTML() : ''}
+    <button class="btn ghost small" id="btnLeave">Вийти</button>`;
+  $('#btnLeave', el).onclick = leaveRoom;
+  const r = $('#btnRetry', el);
+  if (r) r.onclick = () => { Net.since = Date.now(); Net.hostAway = false; Net.start(); el.dataset.k = ''; renderConnect(); };
+}
+
+function connectHelpHTML() {
+  const d = Net.diag;
+  const mark = (ok) => (ok ? '✓' : '…');
+  return `<div class="card help">
+      <div class="lbl">Довго не виходить?</div>
+      ${!d.server ? '<p><b>Немає зв’язку із сервером гри.</b> Перевір, чи працює інтернет на телефоні.</p>' : ''}
+      <p>📱 Той, хто створив гру, має тримати її <b>відкритою на екрані</b>, а не згорнутою.</p>
+      <p>📶 Перемкнись між Wi-Fi і мобільним інтернетом.</p>
+      <p>🛡️ Вимкни VPN, якщо він увімкнений.</p>
+      <p>🧭 Якщо посилання відкрилось у Telegram чи Instagram, натисни ⋯ → «Відкрити в Safari».</p>
+      <div class="diag">Сервер ${mark(d.server)} · Гру знайдено ${mark(d.found)}</div>
+      <button class="btn ghost small" id="btnRetry" type="button">🔄 Спробувати ще раз</button>
+    </div>`;
+}
+setInterval(() => { if (VIEW === 'connect' && CODE) renderConnect(); }, 1000);
+
+function inviteURL() {
+  return location.origin + location.pathname + location.search + '#r=' + CODE + '&n=' + encodeURIComponent(ME_PROFILE.nick);
+}
+async function shareInvite() {
+  const url = inviteURL();
+  const text = `${ME_PROFILE.nick} кличе тебе на гру «Пікантно» 🌶️ (18+)`;
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Пікантно', text, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  copyInvite();
+}
+async function copyInvite() {
+  const url = inviteURL();
+  try { await navigator.clipboard.writeText(url); toast('Посилання скопійовано 📋'); }
+  catch (e) { prompt('Скопіюй посилання:', url); }
+}
+
+
+function renderLobby() {
+  const first = show('lobby');
+  const el = $('#scr-lobby');
+  if (first) {
+    el.className = 'screen enter';
+    el.innerHTML = `
+      <div class="stage-head"><span class="tag">Кімната готова</span><h2>Клич свою людину 💌</h2>
+        <p class="muted">Надішли посилання — щойно його відкриють, гра почнеться сама.</p></div>
+      <div class="card"><div class="versus">
+        <div class="slot">${ava(P('A').avatar, 'lg')}<b>${nickOf('A')}</b></div>
+        <div class="vs">❤️</div>
+        <div class="slot"><div class="empty-slot">?</div><b class="muted">чекаємо…</b></div>
+      </div></div>
+      <div class="card"><div class="lbl">З якого рівня почнемо?</div>
+        <div class="seg" id="lvlPick">${[1, 2, 3].map((l) => `<button data-l="${l}" type="button"><span class="e">${LEVELS[l][0]}</span><b>${LEVELS[l][1]}</b><small>${['легкий флірт', 'спекотніше', 'найсміливіше'][l - 1]}</small></button>`).join('')}</div>
+        <p class="hint" style="margin:12px 0 0">Рівень можна знизити будь-коли сам на сам, а підняти — лише якщо погодяться обоє.</p></div>
+      <button class="btn berry" id="btnShare">📨 Надіслати запрошення</button>
+      <button class="btn ghost small" id="btnCopy">Скопіювати посилання</button>
+      <div class="status" id="lobbyStatus"></div>
+      <button class="btn ghost small" id="btnLeave">Вийти</button>`;
+    $('#btnShare', el).onclick = shareInvite;
+    $('#btnCopy', el).onclick = copyInvite;
+    $('#btnLeave', el).onclick = leaveRoom;
+    $('#lvlPick', el).onclick = (e) => { const b = e.target.closest('button'); if (b) { S.level = +b.dataset.l; commit(); } };
+  }
+  $$('#lvlPick button', el).forEach((b) => b.classList.toggle('on', +b.dataset.l === S.level));
+  const st = $('#lobbyStatus', el);
+  st.innerHTML = Net.ready() ? '<span class="dots"><i></i><i></i><i></i></span> Кімната відкрита, чекаємо' : `<span class="spin"></span>${esc(Net.statusText())}`;
+}
+
+
+/* ---------- game view ---------- */
+let lastScores = {};
+function renderTop() {
+  const seat = (r, right) => {
+    const p = P(r);
+    const online = r === ROLE ? Net.ready() : Net.partnerOnline();
+    const turn = S.turn === r && S.phase !== 'result';
+    return `<div class="pl ${right ? 'right' : ''} ${turn ? 'turn' : ''}">
+      <span class="dot ${online ? 'on' : ''}"></span>${ava(p.avatar, 'sm')}<span class="role">${turn ? '🃏' : ''}</span>
+      <div class="meta"><div class="nm">${esc(p.nick)}</div><div class="sc" data-r="${r}">${p.score}<small>🌶</small></div></div></div>`;
+  };
+  const top = $('#top');
+  top.innerHTML = seat(ROLE, false) + `<button class="menu-btn" id="btnMenu" aria-label="Меню">⋯</button>` + seat(other(ROLE), true);
+  $('#btnMenu').onclick = openMenu;
+  ['A', 'B'].forEach((r) => {
+    const sc = P(r).score;
+    if (lastScores[r] != null && lastScores[r] !== sc) $(`.sc[data-r="${r}"]`, top).classList.add('bump');
+    lastScores[r] = sc;
+  });
+}
+
+
+function renderBanner() {
+  const b = $('#banner');
+  let msg = '';
+  if (ROLE === 'B' && !Net.conn) msg = `<span class="spin"></span> Зв'язок перервався — перепідключаємось…`;
+  else if (ROLE === 'A' && !Net.partnerOnline()) msg = `💤 ${nickOf('B')} поза грою — чекаємо, поки повернеться`;
+  else if (!Net.ready()) msg = `<span class="spin"></span> ${esc(Net.statusText())}`;
+  const k = msg ? 'x' + msg : '';
+  if (b.dataset.k === k) return;
+  b.dataset.k = k;
+  b.innerHTML = msg ? `<div class="banner">${msg}</div>` : '';
+}
+
+
+function stageKey() {
+  let k = S.phase + '|' + S.n + '|' + (S.turn === ROLE ? 'me' : 'them');
+  if (S.phase === 'card' && S.card && isJoint(S.card.type)) k += '|' + (S.ans[ROLE] != null);
+  return k;
+}
+function renderGame() {
+  const first = show('game');
+  renderTop();
+  renderBanner();
+  const k = stageKey();
+  if (k !== lastStageKey || first) {
+    lastStageKey = k;
+    const stage = $('#stage');
+    stage.className = 'enter';
+    stage.innerHTML = '';
+    buildStage(stage);
+    void stage.offsetWidth;
+    if (!first) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  patchStage();
+  renderAsk();
+  maybeFlip();
+  chatTick();
+}
+
+const isJoint = (t) => t === 'n' || t === 'w' || t === 'r' || t === 'h';
+function cardHTML(c, extra = '') {
+  const [ti, tn, col] = TYPES[c.type];
+  return `<div class="pcard ${extra}" style="--c:${col}">
+    <div class="ptop"><span class="ptype">${ti} ${tn}</span>${lvlChip(c.lvl)}</div>
+    <div class="ptext">${esc(c.text)}</div>
+    ${c.type === 'n' ? '<div class="psub">У тебе таке було?</div>' : ''}
+  </div>`;
+}
+function jointOptions(c) {
+  if (c.type === 'n') return [['yes', 'Було 🙈'], ['no', 'Не було 😇']];
+  if (c.type === 'w') return c.opts.map((o, i) => [String(i), o]);
+  if (c.type === 'r') return [1, 2, 3, 4, 5].map((v) => [String(v), String(v)]);
+  if (c.type === 'h') return [['me', 'Я'], ['you', 'Ти']];
+  return [];
+}
+// «Я / Ти» зберігаємо як роль гравця, щоб відповіді обох можна було порівняти
+const normAns = (c, who, v) => (c.type === 'h' ? (v === 'me' ? who : other(who)) : v);
+function ansLabel(c, r, v, abs) {
+  if (v == null) return '—';
+  if (c.type === 'n') return v === 'yes' ? 'Було 🙈' : 'Не було 😇';
+  if (c.type === 'w') return c.opts[+v];
+  if (c.type === 'r') return '🌶'.repeat(+v) + ` ${v}/5`;
+  if (c.type === 'h') return !abs && v === ROLE ? 'Ти' : P(v).nick;
+  return String(v);
+}
+
+function buildStage(st) {
+  const mine = S.turn === ROLE, them = other(ROLE);
+  if (S.phase === 'draw') {
+    if (mine) {
+      st.innerHTML = `
+        <div class="stage-head center" style="align-items:center"><span class="tag">Карта ${S.n + 1} · ${LEVELS[S.level][0]} ${LEVELS[S.level][1]}</span><h2>Твій хід — тягни карту</h2></div>
+        <div class="decks" id="decks">
+          ${[['t', '💬', 'Правда', 'чесна відповідь'], ['d', '⚡', 'Дія', 'сміливе завдання'], ['j', '💞', 'Разом', 'відповідаєте обоє']].map(([k, e, n, s], i) =>
+            `<button class="deck d-${k}" data-k="${k}" style="animation-delay:${i * 0.08}s"><span class="stack"></span><span class="face"><span class="de">${e}</span><b>${n}</b><small>${s}</small></span></button>`).join('')}
+        </div>
+        <p class="hint center">Не хочеш відповідати на витягнуте — тисни «Пас». Без питань і без штрафів.</p>`;
+      $('#decks', st).onclick = (e) => {
+        const b = e.target.closest('.deck'); if (!b || b.disabled) return;
+        $$('.deck', st).forEach((x) => (x.disabled = true));
+        b.classList.add('picked');
+        vibrate(20);
+        setTimeout(() => dispatch({ k: 'draw', deck: b.dataset.k }), 350);
+      };
+    } else {
+      st.innerHTML = `
+        <div class="card wait">
+          <div class="ava xl bob">${avatarSVG(P(them).avatar)}</div>
+          <span class="tag">Карта ${S.n + 1}</span>
+          <h2>${nickOf(them)} обирає колоду…</h2>
+          <p class="muted" style="margin:0">Правда, дія чи разом? Зараз дізнаємось 😏</p>
+        </div>`;
+    }
+    return;
+  }
+  const c = S.card;
+  if (S.phase === 'card') {
+    if (!isJoint(c.type)) {
+      if (mine) {
+        st.innerHTML = `
+          ${cardHTML(c, 'flip')}
+          <div class="card"><label class="lbl" for="resp">${c.type === 't' ? 'Твоя відповідь' : 'Як виконано? (необов’язково)'}</label>
+            <textarea id="resp" rows="3" maxlength="400" placeholder="${c.type === 't' ? 'Пиши чесно… або відповідай голосом' : 'Коментар, якщо хочеш'}"></textarea></div>
+          <div class="row"><button class="btn ghost" id="btnSkip">Пас 🙈</button><button class="btn berry" id="btnDone">${c.type === 't' ? 'Готово ✓' : 'Виконано ✅'}</button></div>`;
+        const ta = $('#resp', st);
+        ta.value = S.resp || '';
+        const push = throttle(() => dispatch({ k: 'resp', text: ta.value.slice(0, 400) }), 350);
+        const typing = throttle(() => Net.send({ t: 'typing' }), 900);
+        ta.addEventListener('input', () => { push(); typing(); });
+        $('#btnDone', st).onclick = (e) => { e.currentTarget.disabled = true; dispatch({ k: 'resp', text: ta.value.slice(0, 400) }); dispatch({ k: 'done' }); };
+        $('#btnSkip', st).onclick = (e) => { e.currentTarget.disabled = true; dispatch({ k: 'skip' }); };
+      } else {
+        st.innerHTML = `
+          ${cardHTML(c, 'flip')}
+          <div class="card"><div class="lbl">${nickOf(them)} ${c.type === 't' ? 'відповідає' : 'виконує'}</div>
+            <div class="story-text empty" id="respOut">…</div>
+            <div class="typing off" id="typing" style="margin-top:8px"><span class="dots"><i></i><i></i><i></i></span> пише…</div></div>
+          <p class="hint center">Реагуй емодзі внизу — ${nickOf(them)} їх побачить 👇</p>`;
+      }
+    } else {
+      const answered = S.ans[ROLE] != null;
+      st.innerHTML = `
+        ${cardHTML(c, 'flip')}
+        ${answered ? `<div class="card wait" style="padding:20px"><h2>Твою відповідь прийнято 🤫</h2><div class="donecheck" id="donecheck"></div><p class="muted" style="margin:0">Відкриємо, щойно відповість ${nickOf(them)}</p></div>`
+          : `<p class="hint center" style="margin:0">Відповідайте обоє — відповіді відкриються одночасно</p>
+             <div class="jopts t-${c.type}" id="jopts">${jointOptions(c).map(([v, l]) => `<button class="jopt" data-v="${esc(v)}">${c.type === 'r' ? `<b>${l}</b><small>${'🌶'.repeat(+v)}</small>` : esc(l)}</button>`).join('')}</div>
+             <button class="btn ghost small" id="btnSkip">Пас 🙈 — пропустити карту</button>`}`;
+      const jo = $('#jopts', st);
+      if (jo) jo.onclick = (e) => {
+        const b = e.target.closest('.jopt'); if (!b) return;
+        b.classList.add('sel'); $$('.jopt', st).forEach((x) => (x.disabled = true));
+        vibrate(15);
+        setTimeout(() => dispatch({ k: 'ans', v: b.dataset.v }), 250);
+      };
+      const sk = $('#btnSkip', st);
+      if (sk) sk.onclick = (e) => { e.currentTarget.disabled = true; dispatch({ k: 'skip' }); };
+    }
+    return;
+  }
+  if (S.phase === 'result') buildResult(st, c, mine);
+}
+
+function buildResult(st, c, mine) {
+  const them = other(ROLE), actor = S.turn;
+  let head = '', body = '';
+  if (c.status === 'skipped') {
+    head = `<div class="result bad pop"><div class="big">Пас 🙈</div><div class="sub">${c.skipBy === ROLE ? 'Ти пропускаєш цю карту' : nickOf(c.skipBy) + ' пропускає цю карту'} — і це нормально</div></div>`;
+  } else if (!isJoint(c.type)) {
+    head = `<div class="result pop"><div class="big">${actor === ROLE ? 'Сміливо! 🔥' : nickOf(actor) + ' — сміливо! 🔥'}</div><div class="delta">+${c.lvl} 🌶</div></div>`;
+    if ((c.resp || '').trim()) body = `<div class="card"><div class="lbl">${actor === ROLE ? 'Твоя відповідь' : nickOf(actor) + ' пише'}</div><div class="story-text">${esc(c.resp)}</div></div>`;
+  } else {
+    const a = c.ans;
+    const match = c.match;
+    const near = c.type === 'r' && !match && Math.abs(+a.A - +a.B) === 1;
+    head = `<div class="result ${match || near ? '' : 'bad'} pop"><div class="big">${match ? 'Збіг! 💞' : near ? 'Майже збіг 😏' : 'Ви різні 👀'}</div><div class="delta">+${match ? 2 : 1} 🌶 кожному</div></div>`;
+    body = `<div class="duo">${[ROLE, them].map((r) => `<div class="card">${ava(P(r).avatar, 'md')}<div class="nm">${r === ROLE ? 'Ти' : nickOf(r)}</div><div class="v ans">${esc(ansLabel(c, r, a[r]))}</div></div>`).join('')}</div>`;
+  }
+  st.innerHTML = `${head}${cardHTML(c, 'small')}${body}
+    <button class="btn ${mine ? 'ghost' : 'berry'}" id="btnNext">${mine ? 'Далі ➜' : 'Мій хід ➜'}</button>`;
+  $('#btnNext', st).onclick = (e) => { e.currentTarget.disabled = true; dispatch({ k: 'next' }); };
+  const fx = 'fx:' + CODE;
+  if (store.get(fx, -1) !== S.n) {
+    store.set(fx, S.n);
+    if (c.status !== 'skipped') setTimeout(() => confetti(true), 150);
+    vibrate(c.status === 'skipped' ? 60 : [30, 40, 30]);
+  }
+}
+
+let partnerTypingAt = 0;
+function patchStage() {
+  const st = $('#stage');
+  const ty = $('#typing', st);
+  if (ty) ty.classList.toggle('off', Date.now() - partnerTypingAt > 2500);
+  const out = $('#respOut', st);
+  if (out) { const t = (S.resp || '').trim(); out.textContent = t || '…'; out.classList.toggle('empty', !t); }
+  const dc = $('#donecheck', st);
+  if (dc) dc.innerHTML = [ROLE, other(ROLE)].map((r) => `<span>${ava(P(r).avatar, 'xs')} ${S.ans[r] != null ? '✓ готово' : '<span class="dots"><i></i><i></i><i></i></span>'}</span>`).join('');
+}
+
+/* --- рівні: знизити може кожен сам, підняти — лише за згодою обох --- */
+function renderAsk() {
+  const box = $('#ask');
+  const a = S.levelAsk;
+  const k = a ? a.by + a.to : '';
+  if (box.dataset.k === k) return;
+  box.dataset.k = k;
+  if (!a) { box.innerHTML = ''; return; }
+  if (a.by === ROLE) { box.innerHTML = `<div class="ask card"><div>⏳ Пропозиція підняти рівень до ${lvlChip(a.to)} надіслана. Чекаємо на відповідь ${nickOf(other(ROLE))}…</div><button class="chip" id="askCancel">Скасувати</button></div>`; }
+  else {
+    box.innerHTML = `<div class="ask card pop"><div><b>${nickOf(a.by)}</b> пропонує підняти рівень до ${lvlChip(a.to)} 😏</div>
+      <div class="row"><button class="btn ghost small" id="askNo">Поки ні</button><button class="btn berry small" id="askYes">Так, погнали</button></div></div>`;
+    vibrate([20, 30, 20]);
+  }
+  const y = $('#askYes', box), n = $('#askNo', box), c = $('#askCancel', box);
+  if (y) y.onclick = () => dispatch({ k: 'level', to: a.to });
+  if (n) n.onclick = () => dispatch({ k: 'levelNo' });
+  if (c) c.onclick = () => dispatch({ k: 'levelNo' });
+}
+
+function maybeFlip() {
+  if (!S.flip || store.get('flip:' + CODE, false)) return;
+  store.set('flip:' + CODE, true);
+  openSheet(`
+    <div class="center"><h3>Хто тягне першим?</h3></div>
+    <div class="coin">🌶️</div>
+    <div class="center" id="flipRes" style="opacity:0;transition:opacity .4s"><div class="ava lg pop" style="margin:0 auto 10px">${avatarSVG(P(S.flip).avatar)}</div>
+      <h3>Першу карту тягне ${S.flip === ROLE ? 'ти!' : nickOf(S.flip)}</h3></div>
+    <button class="btn berry" id="flipOk">Почнемо 🔥</button>`, (b) => {
+    setTimeout(() => { const r = $('#flipRes', b); if (r) r.style.opacity = 1; }, 1300);
+    $('#flipOk', b).onclick = closeSheet;
+  });
+}
+
+/* ---------- menu & summary ---------- */
+function openMenu() {
+  openSheet(`
+    <h3>Меню</h3>
+    <div class="card" style="padding:14px"><div class="lbl">Рівень гри</div>
+      <div class="seg" id="mLvl">${[1, 2, 3].map((l) => `<button data-l="${l}" class="${S.level === l ? 'on' : ''}" type="button"><span class="e">${LEVELS[l][0]}</span><b>${LEVELS[l][1]}</b></button>`).join('')}</div>
+      <p class="hint" style="margin:10px 0 0">Знизити — одразу. Підняти — після згоди ${nickOf(other(ROLE))}.</p></div>
+    <button class="btn mustard" id="mSum">📜 Підсумок вечора</button>
+    <button class="btn sky" id="mProfile">🎨 Змінити героя</button>
+    <button class="btn ghost" id="mInvite">🔗 Посилання на гру</button>
+    <button class="btn ghost" id="mRestart">🔄 Почати заново</button>
+    <button class="btn ghost" id="mLeave">🚪 Вийти з кімнати</button>`, (b) => {
+    $('#mLvl', b).onclick = (e) => {
+      const x = e.target.closest('button'); if (!x) return;
+      const to = +x.dataset.l;
+      if (to === S.level) return;
+      dispatch({ k: 'level', to });
+      closeSheet();
+      toast(to < S.level ? `Рівень знижено до ${LEVELS[to][0]} ${LEVELS[to][1]}` : `Пропозицію надіслано 😏`);
+    };
+    $('#mSum', b).onclick = openSummary;
+    $('#mProfile', b).onclick = openProfileSheet;
+    $('#mInvite', b).onclick = () => { closeSheet(); shareInvite(); };
+    $('#mRestart', b).onclick = () => { if (confirm('Почати заново? Рахунок обнулиться.')) { closeSheet(); dispatch({ k: 'restart' }); } };
+    $('#mLeave', b).onclick = () => { closeSheet(); leaveRoom(); };
+  });
+}
+function openProfileSheet() {
+  openSheet(`<h3>Твій герой</h3><div id="sheetEd"></div><button class="btn berry" id="saveProf">Зберегти</button>`, (b) => {
+    const get = mountEditor($('#sheetEd', b), ME_PROFILE, null);
+    $('#saveProf', b).onclick = () => {
+      ME_PROFILE = get(); store.set('profile', ME_PROFILE);
+      dispatch({ k: 'profile', nick: ME_PROFILE.nick, avatar: ME_PROFILE.avatar });
+      closeSheet(); toast('Герой оновлений ✨');
+    };
+  });
+}
+function openSummary() {
+  const h = S.history || [];
+  const joint = h.filter((x) => isJoint(x.type) && x.status === 'revealed');
+  const matches = joint.filter((x) => x.match).length;
+  const st = (r) => ({ done: h.filter((x) => !isJoint(x.type) && x.actor === r && x.status === 'done').length, skip: h.filter((x) => x.skipBy === r).length });
+  const row = (r) => { const s = st(r); return `<div class="award">${ava(P(r).avatar, 'xs')} <span>${r === ROLE ? 'Ти' : nickOf(r)}</span><b>${P(r).score} 🌶 · ${s.done} сміливих · ${s.skip} пасів</b></div>`; };
+  const bold = ['A', 'B'].sort((a, b) => P(b).score - P(a).score)[0];
+  openSheet(`
+    <h3>📜 Підсумок вечора</h3>
+    <div class="card"><div class="scoreline">${ava(P(ROLE).avatar, 'md')} ${P(ROLE).score} : ${P(other(ROLE)).score} ${ava(P(other(ROLE)).avatar, 'md')}</div>
+      <p class="center muted" style="margin:10px 0 0">${h.length} карт · ${joint.length ? `збігів ${matches} з ${joint.length} (${Math.round(matches / joint.length * 100)}%)` : 'спільних карт ще не було'}</p></div>
+    <div class="card">${row(ROLE)}${row(other(ROLE))}
+      ${h.length ? `<div class="award">🏆 <span>Найсміливіше сьогодні</span><b>${P('A').score === P('B').score ? 'нічия 🤝' : (bold === ROLE ? 'ти' : nickOf(bold))}</b></div>` : ''}</div>
+    ${joint.length ? `<div class="dos-sec"><div class="dos-head">💞 Ваші спільні відповіді</div>${joint.slice(-12).reverse().map((x) => `<div class="fact"><div class="q">${esc(x.text)}</div>
+      <div class="m">${nickOf('A')}: <b>${esc(ansLabel(x, 'A', x.ans.A, true))}</b> · ${nickOf('B')}: <b>${esc(ansLabel(x, 'B', x.ans.B, true))}</b> ${x.match ? '💞' : ''}</div></div>`).join('')}</div>` : ''}
+    <button class="btn ghost small" id="sClose">Закрити</button>`, (b) => { $('#sClose', b).onclick = closeSheet; });
+}
+
+
+function vibrate(p) { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} }
+
+/* reactions bar */
+$('#react').innerHTML = `<button type="button" id="btnChat" class="chat-btn" aria-label="Чат">💬<span class="cnt hidden" id="chatCnt"></span></button>` +
+  REACTIONS.map((e) => `<button type="button" data-e="${e}" aria-label="${e}">${e}</button>`).join('');
+$('#react').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button'); if (!b) return;
+  if (b.id === 'btnChat') { openChat(); return; }
+  floatEmoji(b.dataset.e, true);
+  Net.send({ t: 'emoji', e: b.dataset.e });
+});
+
+/* ---------- chat ---------- */
+let chatOpen = false, chatKnown = -1;
+const chatList = () => (S && S.chat) || [];
+function chatBadge() {
+  const el = $('#chatCnt'); if (!el || !S) return;
+  const seen = store.get('chatSeen:' + CODE, 0);
+  const unread = chatList().slice(seen).filter((m) => m.r !== ROLE).length;
+  el.textContent = unread > 9 ? '9+' : unread;
+  el.classList.toggle('hidden', !unread || chatOpen);
+}
+function chatHTML() {
+  const list = chatList();
+  if (!list.length) return `<div class="chat-empty">Тут ще тихо. Напиши щось ${nickOf(other(ROLE))} 👋</div>`;
+  return list.map((m) => `<div class="msg ${m.r === ROLE ? 'me' : ''}">${m.r === ROLE ? '' : ava(P(m.r).avatar, 'xs')}<div class="b">${esc(m.t)}<small>${new Date(m.ts).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}</small></div></div>`).join('');
+}
+function openChat() {
+  openSheet(`<h3>💬 Чат · ${nickOf(other(ROLE))}</h3>
+    <div class="chat-list" id="chatList">${chatHTML()}</div>
+    <form class="chat-in" id="chatForm" autocomplete="off">
+      <input type="text" id="chatText" maxlength="300" placeholder="Повідомлення…" enterkeyhint="send">
+      <button class="btn small" type="submit" aria-label="Надіслати">➤</button>
+    </form>`, (b) => {
+    const list = $('#chatList', b);
+    list.scrollTop = list.scrollHeight;
+    $('#chatForm', b).onsubmit = (e) => {
+      e.preventDefault();
+      const inp = $('#chatText', b);
+      const t = inp.value.trim();
+      if (!t) return;
+      if (dispatch({ k: 'chat', text: t })) { inp.value = ''; inp.focus(); }
+    };
+  });
+  chatOpen = true;
+  store.set('chatSeen:' + CODE, chatList().length);
+  chatBadge();
+}
+function chatTick() {   // викликається на кожен render: нові повідомлення → тост / оновлення чату
+  const list = chatList();
+  if (chatKnown < 0) { chatKnown = list.length; chatBadge(); return; }
+  if (list.length === chatKnown) return;
+  const fresh = list.slice(chatKnown);
+  chatKnown = list.length;
+  if (chatOpen) {
+    const box = $('#chatList');
+    if (box) { const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80; box.innerHTML = chatHTML(); if (atBottom || fresh.some((m) => m.r === ROLE)) box.scrollTop = box.scrollHeight; }
+    store.set('chatSeen:' + CODE, list.length);
+  } else {
+    const last = fresh.filter((m) => m.r !== ROLE).pop();
+    if (last) { toast(`<span class="tmsg">${ava(P(last.r).avatar, 'xs')}<span>${esc(last.t.length > 70 ? last.t.slice(0, 70) + '…' : last.t)}</span></span>`, 3500); vibrate(25); }
+  }
+  chatBadge();
+}
+
+
+/* =========================================================
+   Game rules (same code runs on both sides)
+   ========================================================= */
+const NONDET = ['draw'];   // дії з випадковістю: гість не застосовує їх наперед, чекає стан від господаря
+function newState(code) {
+  return {
+    app: 'pikantno', code, v: 1, phase: 'lobby', level: 1, levelAsk: null, turn: 'A', flip: null, n: 0,
+    players: { A: { nick: ME_PROFILE.nick, avatar: ME_PROFILE.avatar, score: 0 }, B: null },
+    card: null, resp: '', ans: {}, used: [], history: [], chat: [],
+  };
+}
+function startGame(s) {
+  s.turn = Math.random() < 0.5 ? 'A' : 'B';
+  s.flip = s.turn;
+  s.phase = 'draw'; s.n = 0;
+}
+function drawCard(s, deck) {
+  const types = deck === 't' ? ['t'] : deck === 'd' ? ['d'] : ['n', 'w', 'r', 'h'];
+  const want = Math.random() < 0.7 ? [s.level] : [1, 2, 3].filter((l) => l < s.level);
+  const ok = (i, lv) => types.includes(DECK[i][1]) && lv.includes(DECK[i][0]);
+  let pool = DECK.map((_, i) => i).filter((i) => ok(i, want.length ? want : [s.level]) && !s.used.includes(i));
+  if (!pool.length) pool = DECK.map((_, i) => i).filter((i) => ok(i, [s.level]) && !s.used.includes(i));
+  if (!pool.length) {   // колода цього рівня скінчилась — тасуємо знову
+    s.used = s.used.filter((i) => !(types.includes(DECK[i][1]) && DECK[i][0] === s.level));
+    pool = DECK.map((_, i) => i).filter((i) => ok(i, [s.level]));
+  }
+  const i = pick(pool);
+  s.used.push(i);
+  const [lvl, type, text, opts] = DECK[i];
+  return { i, lvl, type, text, opts: opts || null, status: 'open', ans: null, resp: '' };
+}
+function reduce(s, a, who) {
+  const them = other(who);
+  switch (a.k) {
+    case 'draw':
+      if (s.phase !== 'draw' || s.turn !== who || !['t', 'd', 'j'].includes(a.deck)) return false;
+      s.card = drawCard(s, a.deck); s.resp = ''; s.ans = {};
+      s.phase = 'card';
+      return true;
+    case 'resp':
+      if (s.phase !== 'card' || s.turn !== who || isJoint(s.card.type)) return false;
+      s.resp = String(a.text || '').slice(0, 400);
+      return true;
+    case 'done':
+      if (s.phase !== 'card' || s.turn !== who || isJoint(s.card.type)) return false;
+      s.card.status = 'done'; s.card.resp = s.resp;
+      s.players[who].score += s.card.lvl;
+      return finish(s, who);
+    case 'ans':
+      if (s.phase !== 'card' || !isJoint(s.card.type) || s.ans[who] != null) return false;
+      s.ans[who] = normAns(s.card, who, String(a.v));
+      if (s.ans[them] != null) {
+        const c = s.card;
+        c.ans = { A: s.ans.A, B: s.ans.B };
+        c.match = c.ans.A === c.ans.B;
+        c.status = 'revealed';
+        ['A', 'B'].forEach((r) => { s.players[r].score += c.match ? 2 : 1; });
+        return finish(s, s.turn);
+      }
+      return true;
+    case 'skip':
+      if (s.phase !== 'card') return false;
+      if (!isJoint(s.card.type) && s.turn !== who) return false;
+      s.card.status = 'skipped'; s.card.skipBy = who;
+      return finish(s, s.turn);
+    case 'next':
+      if (s.phase !== 'result') return false;
+      s.turn = other(s.turn); s.n++;
+      s.phase = 'draw'; s.card = null; s.resp = ''; s.ans = {};
+      return true;
+    case 'level': {
+      const to = a.to | 0;
+      if (![1, 2, 3].includes(to) || to === s.level) return false;
+      if (to < s.level) { s.level = to; s.levelAsk = null; return true; }
+      if (s.levelAsk && s.levelAsk.to === to && s.levelAsk.by !== who) { s.level = to; s.levelAsk = null; return true; }
+      s.levelAsk = { by: who, to };
+      return true;
+    }
+    case 'levelNo':
+      if (!s.levelAsk) return false;
+      s.levelAsk = null;
+      return true;
+    case 'chat': {
+      const t = String(a.text || '').trim().slice(0, 300);
+      if (!t) return false;
+      s.chat = (s.chat || []).concat({ r: who, t, ts: Date.now() }).slice(-150);
+      return true;
+    }
+    case 'profile':
+      if (!s.players[who]) return false;
+      s.players[who].nick = String(a.nick || '').slice(0, 16) || s.players[who].nick;
+      s.players[who].avatar = a.avatar || s.players[who].avatar;
+      return true;
+    case 'restart':
+      if (s.phase === 'lobby') return false;
+      s.players.A.score = 0; if (s.players.B) s.players.B.score = 0;
+      s.history = []; s.n = 0; s.phase = 'draw'; s.card = null; s.ans = {}; s.resp = '';
+      return true;
+  }
+  return false;
+}
+function finish(s, actor) {
+  const c = s.card;
+  s.history.push({ n: s.n, actor, type: c.type, lvl: c.lvl, text: c.text, opts: c.opts, status: c.status, skipBy: c.skipBy || null, ans: c.ans, match: !!c.match });
+  if (s.history.length > 200) s.history.shift();
+  s.phase = 'result';
+  return true;
+}
+
+function dispatch(a) {
+  if (!S) return false;
+  if (ROLE === 'A') {
+    if (reduce(S, a, 'A')) commit();
+    return true;
+  }
+  if (!Net.conn) { toast('Немає зв\'язку… зачекай секунду 🔌'); return false; }
+  const c = clone(S);
+  if (!NONDET.includes(a.k) && reduce(c, a, 'B')) { S = c; persist(); render(); }
+  Net.send({ t: 'act', a });
+  return true;
+}
+function persist() {
+  if (!S) return;
+  store.set('state:' + CODE, S);
+  const partner = S.players[other(ROLE)];
+  store.set('lastRoom', { hash: location.hash, partner: partner ? partner.nick : '', code: CODE });
+}
+function commit() {   // host only
+  S.v++;
+  persist();
+  Net.send({ t: 'state', s: S });
+  render();
+}
+
+/* =========================================================
+   Network — через relay.js (публічні MQTT-брокери, шифрування ключем кімнати)
+   ========================================================= */
+const Net = {
+  relay: null, linked: false, lastSeen: 0, visibleAt: 0, upAt: 0, partnerSession: null,
+  hostAway: false, diag: { server: false, found: false }, since: 0, status: 'Підключаємося до сервера гри…', hb: null,
+  get conn() { return this.linked; },
+  ready() { return !!(this.relay && this.relay.up); },
+  partnerOnline() { return this.linked; },
+  statusText() { return this.status; },
+  send(m) { if (this.relay) this.relay.send(other(ROLE), m); },
+
+  start() {
+    this.stop();
+    this.linked = false; this.lastSeen = 0; this.hostAway = false; this.partnerSession = null;
+    this.diag = { server: false, found: false };
+    this.status = 'Підключаємося до сервера гри…';
+    this.relay = new Relay({ app: 'pikantno', code: CODE, me: ROLE, onMessage: (f, m, s) => this.receive(f, m, s), onStatus: (up) => this.onStatus(up) });
+    this.relay.start();
+    this.hb = setInterval(() => this.heartbeat(), 2500);
+  },
+  stop() {
+    clearInterval(this.hb);
+    if (this.relay) this.relay.stop();
+    this.relay = null; this.linked = false;
+  },
+  onStatus(up) {
+    this.diag.server = up > 0;
+    if (up) {
+      this.upAt = this.upAt || Date.now();
+      this.status = this.linked ? 'Онлайн' : ROLE === 'B' ? 'Сервер на зв’язку — шукаємо гру…' : 'Онлайн';
+      if (ROLE === 'B') { if (!this.linked) this.hello(); } else this.send({ t: 'hostup' });
+    } else {
+      this.upAt = 0;
+      this.status = 'Підключаємося до сервера гри…';
+    }
+    render();
+  },
+  hello() { this.send({ t: 'hello', profile: ME_PROFILE, state: S }); },
+  receive(from, m, session) {
+    if (from !== other(ROLE) || !m) return;
+    this.lastSeen = Date.now();
+    if (!this.linked) {
+      if (ROLE === 'A' && m.t !== 'hello') { this.send({ t: 'who' }); return; }   // господар «впізнає» гостя лише за привітанням
+      this.linked = true; this.hostAway = false; this.diag.found = true; this.status = 'Онлайн';
+      render();
+    }
+    if (ROLE === 'B' && (m.t === 'who' || m.t === 'hostup')) { this.hello(); return; }
+    if (m.t === 'hello') { m.fresh = this.partnerSession !== session; this.partnerSession = session; }
+    onMessage(m);
+  },
+  heartbeat() {
+    if (!this.ready()) return;
+    const now = Date.now();
+    if (this.linked && now - Math.max(this.lastSeen, this.visibleAt) > 10000) {
+      this.linked = false; this.partnerSession = null;
+      this.status = ROLE === 'B' ? 'Сервер на зв’язку — шукаємо гру…' : 'Онлайн';
+      render();
+    }
+    if (ROLE === 'B' && !this.linked) {
+      this.hello();
+      const away = this.upAt && now - this.upAt > 7000;
+      if (away !== this.hostAway) { this.hostAway = away; render(); }
+    } else if (this.linked) this.send({ t: 'ping' });
+  },
+  wake() {   // сторінка знову видима (iOS заморожує фонові вкладки)
+    this.visibleAt = Date.now();
+    if (!this.relay) return;
+    this.relay.wake();
+    if (this.linked) this.send({ t: 'ping' });
+    else if (ROLE === 'B') this.hello();
+    else this.send({ t: 'hostup' });
+  },
+};
+
+function onMessage(m) {
+  if (!m || typeof m !== 'object') return;
+  switch (m.t) {
+    case 'ping': return;
+    case 'hello':
+      if (ROLE !== 'A' || !m.profile) return;
+      {
+        // якщо господар втратив стан (інший браузер / очищено), а в гостя він є — беремо в гостя
+        if (m.state && m.state.code === CODE && S.phase === 'lobby' && (m.state.v || 0) > S.v) S = m.state;
+        const prev = S.players.B;
+        S.players.B = { nick: String(m.profile.nick || 'Гість').slice(0, 16), avatar: m.profile.avatar || {}, score: prev ? prev.score : 0 };
+        S.players.A.nick = ME_PROFILE.nick; S.players.A.avatar = ME_PROFILE.avatar;
+        const firstTime = S.phase === 'lobby';
+        if (firstTime) startGame(S);
+        commit();
+        if (m.fresh) toast(firstTime ? `${esc(S.players.B.nick)} у грі! 🎉` : `${esc(S.players.B.nick)} повертається 👋`);
+      }
+      return;
+    case 'state':
+      if (ROLE !== 'B' || !m.s || m.s.code !== CODE) return;
+      {
+        const wasNone = !S || S.phase === 'lobby';
+        S = m.s; persist(); render();
+        if (wasNone && S.phase !== 'lobby') toast(`Ти в грі! Напроти — ${esc(S.players.A.nick)} 🌶️`);
+      }
+      return;
+    case 'act':
+      if (ROLE !== 'A') return;
+      if (reduce(S, m.a || {}, 'B')) commit();
+      else Net.send({ t: 'state', s: S });
+      return;
+    case 'typing':
+      partnerTypingAt = Date.now();
+      if (VIEW === 'game') patchStage();
+      setTimeout(() => { if (VIEW === 'game') patchStage(); }, 2600);
+      return;
+    case 'emoji':
+      if (REACTIONS.includes(m.e)) { floatEmoji(m.e, false); vibrate(20); }
+      return;
+  }
+}
+
+
+/* =========================================================
+   Flow
+   ========================================================= */
+function render() {
+  if (!CODE) return;
+  if (!S || (ROLE === 'B' && S.phase === 'lobby')) renderConnect();
+  else if (S.phase === 'lobby') renderLobby();
+  else renderGame();
+}
+function randomCode() {
+  const a = 'abcdefghjkmnpqrstuvwxyz23456789';
+  let s = '';
+  const buf = new Uint32Array(9);
+  crypto.getRandomValues(buf);
+  buf.forEach((n) => { s += a[n % a.length]; });
+  return s;
+}
+function createRoom() {
+  CODE = randomCode();
+  ROLE = 'A';
+  HOST_NICK = ME_PROFILE.nick;
+  store.set('hosted:' + CODE, true);
+  S = newState(CODE);
+  history.replaceState(null, '', '#r=' + CODE + '&n=' + encodeURIComponent(ME_PROFILE.nick));
+  persist();
+  enterRoom();
+}
+function enterRoom() {
+  VIEW = null; lastStageKey = null; lastScores = {}; chatKnown = -1;
+  if (ROLE === 'A' && !S) S = newState(CODE);
+  if (ROLE === 'A') { S.players.A.nick = ME_PROFILE.nick; S.players.A.avatar = ME_PROFILE.avatar; }
+  render();
+  Net.start();
+}
+function leaveRoom() {
+  Net.stop();
+  CODE = null; S = null; ROLE = null; HOST_NICK = '';
+  history.replaceState(null, '', location.pathname + location.search);
+  VIEW = null;
+  renderHome();
+}
+function parseHash() {
+  const p = new URLSearchParams(location.hash.slice(1));
+  return { code: (p.get('r') || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 16), nick: (p.get('n') || '').slice(0, 16) };
+}
+function boot() {
+  Net.stop();
+  VIEW = null;
+  const { code, nick } = parseHash();
+  if (!code) { CODE = null; S = null; renderHome(); return; }
+  CODE = code; HOST_NICK = nick;
+  ROLE = store.get('hosted:' + code, false) ? 'A' : 'B';
+  S = store.get('state:' + code, null);
+  if (S && S.code !== code) S = null;
+  if (ME_PROFILE && store.get('adult', false) && (ROLE === 'A' || S)) enterRoom();
+  else renderHome();
+}
+window.addEventListener('hashchange', boot);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && CODE) Net.wake(); });
+window.addEventListener('pageshow', (e) => { if (e.persisted && CODE) Net.wake(); });
+window.addEventListener('pagehide', () => { /* тримаємо стан у localStorage — повернемось */ });
+
+if (typeof mqtt === 'undefined' || typeof Relay === 'undefined' || !window.crypto || !crypto.subtle) {
+  document.getElementById('app').innerHTML = '<div class="card wait"><h2>Не вдалося завантажити гру 😕</h2><p class="muted">Перевір інтернет і онови сторінку.</p></div>';
+} else {
+  boot();
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {}); });
+}
+</script>
+</body>
+</html>
