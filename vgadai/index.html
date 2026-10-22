@@ -274,6 +274,8 @@ input:focus,textarea:focus{border-color:var(--pumpkin);box-shadow:0 0 0 4px rgba
 .float{position:absolute;bottom:80px;font-size:44px;will-change:transform,opacity}
 .confetti{position:absolute;top:40%;left:50%;font-size:26px;will-change:transform,opacity}
 
+.help p{margin:0 0 8px;font-size:15px;font-weight:700}
+.help .diag{font-size:13px;color:var(--muted);background:#231936;border-radius:12px;padding:9px 12px;margin:6px 0 12px;font-weight:800}
 /* toast & sheet */
 #toasts{position:fixed;top:calc(env(safe-area-inset-top) + 12px);left:0;right:0;z-index:40;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 16px}
 .toast{background:var(--cream);color:var(--ink);font-weight:900;border-radius:16px;padding:11px 16px;box-shadow:0 5px 0 #c9b28f,0 12px 24px rgba(0,0,0,.35);max-width:440px;text-align:center;animation:pop .45s var(--spring) both}
@@ -644,22 +646,47 @@ function renderHome() {
 function renderConnect() {
   const first = show('connect');
   const el = $('#scr-connect');
+  if (first) Net.since = Date.now();
   const away = Net.hostAway;
-  const html = `
+  const slow = Date.now() - Net.since > 15000;
+  const k = away + '|' + slow;
+  if (!first && el.dataset.k === k) {
+    const s = $('#cStatus', el); if (s && !away) s.textContent = Net.statusText();
+    const dg = $('.diag', el); if (dg) dg.outerHTML = $('.diag', (() => { const t = document.createElement('div'); t.innerHTML = connectHelpHTML(); return t; })()).outerHTML;
+    return;
+  }
+  el.dataset.k = k;
+  el.className = 'screen' + (first ? ' enter' : '');
+  el.innerHTML = `
     <div class="logo"><div class="logo-badge">🍂</div><h1>Вгадай<br><span>мене</span></h1></div>
     <div class="card wait">
       <div class="ava xl bob">${avatarSVG(ME_PROFILE.avatar)}</div>
       <h2>${away ? esc(HOST_NICK || 'Друг') + ' зараз не в грі' : 'Заходимо в гру…'}</h2>
-      <div class="status"><span class="spin"></span>${away ? 'Щойно ' + esc(HOST_NICK || 'друг') + ' відкриє гру — під\'єднаємось самі' : esc(Net.statusText())}</div>
+      <div class="status"><span class="spin"></span><span id="cStatus">${away ? 'Щойно ' + esc(HOST_NICK || 'друг') + ' відкриє гру — під\'єднаємось самі' : esc(Net.statusText())}</span></div>
     </div>
+    ${slow ? connectHelpHTML() : ''}
     <button class="btn ghost small" id="btnLeave">Вийти</button>`;
-  if (first || el.dataset.k !== String(away)) {
-    el.dataset.k = String(away);
-    el.className = 'screen' + (first ? ' enter' : '');
-    el.innerHTML = html;
-    $('#btnLeave', el).onclick = leaveRoom;
-  }
+  $('#btnLeave', el).onclick = leaveRoom;
+  const r = $('#btnRetry', el);
+  if (r) r.onclick = () => { Net.since = Date.now(); Net.hostAway = false; Net.diag = { server: false, found: false, ice: '' }; Net.pending = null; Net.makePeer(); el.dataset.k = ''; renderConnect(); };
 }
+
+function connectHelpHTML() {
+  const d = Net.diag;
+  const mark = (ok, fail) => (ok ? '✓' : fail ? '✕' : '…');
+  const iceFail = d.ice === 'failed';
+  return `<div class="card help">
+      <div class="lbl">Довго не виходить?</div>
+      ${iceFail ? '<p><b>Схоже, ваші мережі не пускають пряме з’єднання.</b> Найчастіше допомагає Wi-Fi замість мобільного інтернету (або навпаки).</p>' : ''}
+      <p>📱 Той, хто створив гру, має тримати її <b>відкритою на екрані</b>, а не згорнутою.</p>
+      <p>📶 Перемкнись між Wi-Fi і мобільним інтернетом.</p>
+      <p>🛡️ Вимкни VPN, якщо він увімкнений.</p>
+      <p>🧭 Якщо посилання відкрилось у Telegram чи Instagram, натисни ⋯ → «Відкрити в Safari».</p>
+      <div class="diag">Сервер ${mark(d.server)} · Гру знайдено ${mark(d.found)} · Пряме з’єднання ${mark(d.ice === 'connected' || d.ice === 'completed', iceFail)}</div>
+      <button class="btn ghost small" id="btnRetry" type="button">🔄 Спробувати ще раз</button>
+    </div>`;
+}
+setInterval(() => { if (VIEW === 'connect' && CODE) renderConnect(); }, 1000);
 
 function inviteURL() {
   return location.origin + location.pathname + location.search + '#r=' + CODE + '&n=' + encodeURIComponent(ME_PROFILE.nick);
@@ -1338,16 +1365,24 @@ function commit() {   // host only
 /* =========================================================
    Network (PeerJS / WebRTC)
    ========================================================= */
+// Сервери для обходу домашніх і мобільних мереж. STUN підказує телефону його зовнішню адресу,
+// TURN передає дані через себе, коли прямого з'єднання немає (часто буває між країнами й на мобільному інтернеті).
+const ICE_SERVERS = [
+  { urls: ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478'] },
+  { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' },
+  { urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443', 'turn:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' },
+];
 const Net = {
   peer: null, conn: null, pending: null, lastSeen: 0, visibleAt: 0,
-  hostAway: false, status: 'Підключаємося до мережі…', retryT: null, connectT: null,
+  hostAway: false, diag: { server: false, found: false, ice: '' }, since: 0, status: 'Підключаємося до мережі…', retryT: null, connectT: null,
   ready() { return !!(this.peer && this.peer.open); },
   partnerOnline() { return !!this.conn; },
   statusText() { return this.status; },
   opts() {
     const ps = new URLSearchParams(location.search).get('ps');   // для локального тесту: ?ps=localhost:9000
-    if (ps) { const [host, port] = ps.split(':'); return { host, port: +port || 9000, path: '/', secure: false, debug: 1 }; }
-    return { debug: 1 };
+    const base = { debug: 1, config: { iceServers: ICE_SERVERS } };
+    if (ps) { const [host, port] = ps.split(':'); return Object.assign(base, { host, port: +port || 9000, path: '/', secure: false }); }
+    return base;
   },
   send(m) { if (this.conn && this.conn.open) { try { this.conn.send(m); } catch (e) {} } },
 
@@ -1364,12 +1399,14 @@ const Net = {
   makePeer() {
     clearTimeout(this.retryT);
     if (this.peer) { const old = this.peer; this.peer = null; try { old.destroy(); } catch (e) {} }
-    this.status = 'Підключаємося до мережі…';
+    this.status = 'Підключаємося до сервера гри…';
+    this.diag.server = false;
     const p = ROLE === 'A' ? new Peer(PREFIX + CODE, this.opts()) : new Peer(this.opts());
     this.peer = p;
     p.on('open', () => {
       if (p !== this.peer) return;
-      this.status = 'Онлайн';
+      this.status = ROLE === 'B' ? 'Сервер на зв’язку — шукаємо гру…' : 'Онлайн';
+      this.diag.server = true;
       if (ROLE === 'B') this.connect();
       render();
     });
@@ -1418,6 +1455,14 @@ const Net = {
     if (this.pending) { try { this.pending.close(); } catch (e) {} }
     const c = p.connect(PREFIX + CODE, { reliable: true, serialization: 'json' });
     this.pending = c;
+    if (this.status.indexOf('Пряме') !== 0) this.status = 'Стукаємо до гри…';
+    c.on('iceStateChanged', (st) => {
+      if (this.pending !== c && this.conn !== c) return;
+      this.diag.found = true; this.diag.ice = st;
+      if (st === 'checking') this.status = 'Гру знайдено — встановлюємо пряме з’єднання…';
+      else if (st === 'failed') this.status = 'Пряме з’єднання не вдалося — пробуємо ще…';
+      render();
+    });
     this.attach(c);
     setTimeout(() => {
       if (this.pending === c && !c.open) { this.pending = null; try { c.close(); } catch (e) {} this.scheduleConnect(1500); }
