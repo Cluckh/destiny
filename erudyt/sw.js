@@ -1,8 +1,8 @@
 // Окремий service worker для гри: його scope (/destiny/erudyt/) вужчий за scope
 // рандомайзера, тож сторінки гри обслуговує саме він, а не cache-first воркер із кореня.
 // Стратегія network-first: оновлення видно одразу, кеш — лише на випадок офлайну.
-const CACHE = 'erudyt-v1';
-const ASSETS = ['./', './index.html', './peerjs.min.js', './manifest.json', './icon.svg', './apple-touch-icon.png'];
+const CACHE = 'erudyt-v2';
+const ASSETS = ['./', './index.html', './mqtt.min.js', './relay.js', './manifest.json', './icon.svg', './apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).catch(() => {}).then(() => self.skipWaiting()));
@@ -22,7 +22,7 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(req.url);
   const own = url.origin === location.origin;
   const fonts = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
-  if (!own && !fonts) return; // PeerJS-сервер та інше — напряму, без кешу
+  if (!own && !fonts) return; // брокери та інше — напряму, без кешу
 
   e.respondWith(
     fetch(req).then((res) => {

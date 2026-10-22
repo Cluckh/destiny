@@ -270,6 +270,19 @@ input:focus,textarea:focus{border-color:var(--pumpkin);box-shadow:0 0 0 4px rgba
   background:rgba(45,33,66,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:3px solid var(--line);border-radius:999px;padding:5px;box-shadow:0 6px 0 var(--shadow)}
 .react button{width:44px;height:44px;border:0;border-radius:50%;background:transparent;font-size:24px;transition:transform .2s var(--spring)}
 .react button:active{transform:scale(1.35)}
+.react .chat-btn{position:relative;background:rgba(240,138,60,.18)}
+.react .cnt{position:absolute;top:0;right:0;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:var(--berry);color:#fff;font:900 11px/19px Nunito,sans-serif;animation:pop .4s var(--spring)}
+.chat-list{display:flex;flex-direction:column;gap:9px;max-height:52dvh;min-height:120px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 2px}
+.chat-empty{margin:auto;color:var(--muted);text-align:center;font-weight:700;padding:20px}
+.msg{display:flex;gap:8px;align-items:flex-end;max-width:85%;animation:rise .3s var(--ease) both}
+.msg.me{align-self:flex-end}
+.msg .b{background:var(--panel-2);padding:9px 13px 7px;border-radius:18px 18px 18px 6px;font-weight:700;overflow-wrap:anywhere;line-height:1.35}
+.msg.me .b{background:var(--pumpkin);color:var(--ink);border-radius:18px 18px 6px 18px}
+.msg .b small{display:block;font-size:11px;opacity:.6;margin-top:2px;text-align:right;font-weight:800}
+.chat-in{display:flex;gap:8px;align-items:center}
+.chat-in input{flex:1;min-width:0}
+.chat-in .btn{width:58px;flex:none;font-size:20px;padding:13px 0}
+.tmsg{display:inline-flex;align-items:center;gap:9px;text-align:left}
 #fx{position:fixed;inset:0;pointer-events:none;z-index:30;overflow:hidden}
 .float{position:absolute;bottom:80px;font-size:44px;will-change:transform,opacity}
 .confetti{position:absolute;top:40%;left:50%;font-size:26px;will-change:transform,opacity}
@@ -339,15 +352,15 @@ input:focus,textarea:focus{border-color:var(--pumpkin);box-shadow:0 0 0 4px rgba
 <div id="toasts"></div>
 <div id="fx"></div>
 
-<script src="./peerjs.min.js"></script>
+<script src="./mqtt.min.js"></script>
+<script src="./relay.js"></script>
 <script>
 'use strict';
 /* =========================================================
-   Вгадай мене — гра на двох через WebRTC (PeerJS)
+   Вгадай мене — гра на двох; зв’язок через relay.js (MQTT-брокери)
    Господар кімнати (A) тримає стан гри, гість (B) надсилає дії.
    ========================================================= */
 
-const PREFIX = 'vgadai-';
 const OPT_COLORS = ['#f08a3c', '#7fb7d9', '#93b977', '#e35a72'];
 const LETTERS = ['А', 'Б', 'В', 'Г'];
 
@@ -535,8 +548,11 @@ function confetti(good) {
     ], { duration: 1500 + rnd(700), easing: 'cubic-bezier(.15,.7,.3,1)' }).onfinish = () => el.remove();
   }
 }
+let sheetHideT = null;
 function openSheet(html, onMount) {
   const sh = $('#sheet');
+  clearTimeout(sheetHideT);
+  chatOpen = false;
   sh.classList.remove('hidden', 'closing');
   const body = $('.sheet-body', sh);
   body.innerHTML = '<div class="grab"></div>' + html;
@@ -548,7 +564,9 @@ function closeSheet() {
   const sh = $('#sheet');
   if (sh.classList.contains('hidden')) return;
   sh.classList.add('closing');
-  setTimeout(() => sh.classList.add('hidden'), 300);
+  chatOpen = false;
+  sheetHideT = setTimeout(() => sh.classList.add('hidden'), 300);
+  if (typeof chatBadge === 'function') chatBadge();
 }
 
 /* ---------- profile editor ---------- */
@@ -668,21 +686,20 @@ function renderConnect() {
     <button class="btn ghost small" id="btnLeave">Вийти</button>`;
   $('#btnLeave', el).onclick = leaveRoom;
   const r = $('#btnRetry', el);
-  if (r) r.onclick = () => { Net.since = Date.now(); Net.hostAway = false; Net.diag = { server: false, found: false, ice: '' }; Net.pending = null; Net.makePeer(); el.dataset.k = ''; renderConnect(); };
+  if (r) r.onclick = () => { Net.since = Date.now(); Net.hostAway = false; Net.start(); el.dataset.k = ''; renderConnect(); };
 }
 
 function connectHelpHTML() {
   const d = Net.diag;
-  const mark = (ok, fail) => (ok ? '✓' : fail ? '✕' : '…');
-  const iceFail = d.ice === 'failed';
+  const mark = (ok) => (ok ? '✓' : '…');
   return `<div class="card help">
       <div class="lbl">Довго не виходить?</div>
-      ${iceFail ? '<p><b>Схоже, ваші мережі не пускають пряме з’єднання.</b> Найчастіше допомагає Wi-Fi замість мобільного інтернету (або навпаки).</p>' : ''}
+      ${!d.server ? '<p><b>Немає зв’язку із сервером гри.</b> Перевір, чи працює інтернет на телефоні.</p>' : ''}
       <p>📱 Той, хто створив гру, має тримати її <b>відкритою на екрані</b>, а не згорнутою.</p>
       <p>📶 Перемкнись між Wi-Fi і мобільним інтернетом.</p>
       <p>🛡️ Вимкни VPN, якщо він увімкнений.</p>
       <p>🧭 Якщо посилання відкрилось у Telegram чи Instagram, натисни ⋯ → «Відкрити в Safari».</p>
-      <div class="diag">Сервер ${mark(d.server)} · Гру знайдено ${mark(d.found)} · Пряме з’єднання ${mark(d.ice === 'connected' || d.ice === 'completed', iceFail)}</div>
+      <div class="diag">Сервер ${mark(d.server)} · Гру знайдено ${mark(d.found)}</div>
       <button class="btn ghost small" id="btnRetry" type="button">🔄 Спробувати ще раз</button>
     </div>`;
 }
@@ -787,6 +804,7 @@ function renderGame() {
   }
   patchStage();
   maybeFlip();
+  chatTick();
 }
 
 const roundTag = () => `<span class="tag">Раунд ${S.round}</span>`;
@@ -1231,12 +1249,67 @@ function roundRect(ctx, x, y, w, h, r) {
 function vibrate(p) { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} }
 
 /* reactions bar */
-$('#react').innerHTML = REACTIONS.map((e) => `<button type="button" data-e="${e}" aria-label="${e}">${e}</button>`).join('');
+$('#react').innerHTML = `<button type="button" id="btnChat" class="chat-btn" aria-label="Чат">💬<span class="cnt hidden" id="chatCnt"></span></button>` +
+  REACTIONS.map((e) => `<button type="button" data-e="${e}" aria-label="${e}">${e}</button>`).join('');
 $('#react').addEventListener('click', (ev) => {
   const b = ev.target.closest('button'); if (!b) return;
+  if (b.id === 'btnChat') { openChat(); return; }
   floatEmoji(b.dataset.e, true);
   Net.send({ t: 'emoji', e: b.dataset.e });
 });
+
+/* ---------- chat ---------- */
+let chatOpen = false, chatKnown = -1;
+const chatList = () => (S && S.chat) || [];
+function chatBadge() {
+  const el = $('#chatCnt'); if (!el || !S) return;
+  const seen = store.get('chatSeen:' + CODE, 0);
+  const unread = chatList().slice(seen).filter((m) => m.r !== ROLE).length;
+  el.textContent = unread > 9 ? '9+' : unread;
+  el.classList.toggle('hidden', !unread || chatOpen);
+}
+function chatHTML() {
+  const list = chatList();
+  if (!list.length) return `<div class="chat-empty">Тут ще тихо. Напиши щось ${nickOf(other(ROLE))} 👋</div>`;
+  return list.map((m) => `<div class="msg ${m.r === ROLE ? 'me' : ''}">${m.r === ROLE ? '' : ava(P(m.r).avatar, 'xs')}<div class="b">${esc(m.t)}<small>${new Date(m.ts).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}</small></div></div>`).join('');
+}
+function openChat() {
+  openSheet(`<h3>💬 Чат · ${nickOf(other(ROLE))}</h3>
+    <div class="chat-list" id="chatList">${chatHTML()}</div>
+    <form class="chat-in" id="chatForm" autocomplete="off">
+      <input type="text" id="chatText" maxlength="300" placeholder="Повідомлення…" enterkeyhint="send">
+      <button class="btn small" type="submit" aria-label="Надіслати">➤</button>
+    </form>`, (b) => {
+    const list = $('#chatList', b);
+    list.scrollTop = list.scrollHeight;
+    $('#chatForm', b).onsubmit = (e) => {
+      e.preventDefault();
+      const inp = $('#chatText', b);
+      const t = inp.value.trim();
+      if (!t) return;
+      if (dispatch({ k: 'chat', text: t })) { inp.value = ''; inp.focus(); }
+    };
+  });
+  chatOpen = true;
+  store.set('chatSeen:' + CODE, chatList().length);
+  chatBadge();
+}
+function chatTick() {   // викликається на кожен render: нові повідомлення → тост / оновлення чату
+  const list = chatList();
+  if (chatKnown < 0) { chatKnown = list.length; chatBadge(); return; }
+  if (list.length === chatKnown) return;
+  const fresh = list.slice(chatKnown);
+  chatKnown = list.length;
+  if (chatOpen) {
+    const box = $('#chatList');
+    if (box) { const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80; box.innerHTML = chatHTML(); if (atBottom || fresh.some((m) => m.r === ROLE)) box.scrollTop = box.scrollHeight; }
+    store.set('chatSeen:' + CODE, list.length);
+  } else {
+    const last = fresh.filter((m) => m.r !== ROLE).pop();
+    if (last) { toast(`<span class="tmsg">${ava(P(last.r).avatar, 'xs')}<span>${esc(last.t.length > 70 ? last.t.slice(0, 70) + '…' : last.t)}</span></span>`, 3500); vibrate(25); }
+  }
+  chatBadge();
+}
 
 /* =========================================================
    Game rules (same code runs on both sides)
@@ -1245,7 +1318,7 @@ function newState(code) {
   return {
     app: 1, code, v: 1, phase: 'lobby', round: 0, author: 'A', prevAuthor: null, flip: null,
     players: { A: { nick: ME_PROFILE.nick, avatar: ME_PROFILE.avatar, score: 0 }, B: null },
-    q: null, m: null, history: [], usedMirror: [], mirrorCount: 0, matchCount: 0,
+    q: null, m: null, history: [], usedMirror: [], mirrorCount: 0, matchCount: 0, chat: [],
   };
 }
 function startWrite(s, author) { s.phase = 'write'; s.author = author; s.prevAuthor = author; s.q = null; s.m = null; }
@@ -1326,6 +1399,12 @@ function reduce(s, a, who) {
       s.players[who].nick = String(a.nick || '').slice(0, 16) || s.players[who].nick;
       s.players[who].avatar = a.avatar || s.players[who].avatar;
       return true;
+    case 'chat': {
+      const t = String(a.text || '').trim().slice(0, 300);
+      if (!t) return false;
+      s.chat = (s.chat || []).concat({ r: who, t, ts: Date.now() }).slice(-150);
+      return true;
+    }
     case 'restart':
       if (s.phase === 'lobby') return false;
       s.players.A.score = 0; if (s.players.B) s.players.B.score = 0;
@@ -1363,155 +1442,77 @@ function commit() {   // host only
 }
 
 /* =========================================================
-   Network (PeerJS / WebRTC)
+   Network — через relay.js (публічні MQTT-брокери, шифрування ключем кімнати)
    ========================================================= */
-// Сервери для обходу домашніх і мобільних мереж. STUN підказує телефону його зовнішню адресу,
-// TURN передає дані через себе, коли прямого з'єднання немає (часто буває між країнами й на мобільному інтернеті).
-const ICE_SERVERS = [
-  { urls: ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478'] },
-  { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' },
-  { urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443', 'turn:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' },
-];
 const Net = {
-  peer: null, conn: null, pending: null, lastSeen: 0, visibleAt: 0,
-  hostAway: false, diag: { server: false, found: false, ice: '' }, since: 0, status: 'Підключаємося до мережі…', retryT: null, connectT: null,
-  ready() { return !!(this.peer && this.peer.open); },
-  partnerOnline() { return !!this.conn; },
+  relay: null, linked: false, lastSeen: 0, visibleAt: 0, upAt: 0, partnerSession: null,
+  hostAway: false, diag: { server: false, found: false }, since: 0, status: 'Підключаємося до сервера гри…', hb: null,
+  get conn() { return this.linked; },
+  ready() { return !!(this.relay && this.relay.up); },
+  partnerOnline() { return this.linked; },
   statusText() { return this.status; },
-  opts() {
-    const ps = new URLSearchParams(location.search).get('ps');   // для локального тесту: ?ps=localhost:9000
-    const base = { debug: 1, config: { iceServers: ICE_SERVERS } };
-    if (ps) { const [host, port] = ps.split(':'); return Object.assign(base, { host, port: +port || 9000, path: '/', secure: false }); }
-    return base;
-  },
-  send(m) { if (this.conn && this.conn.open) { try { this.conn.send(m); } catch (e) {} } },
+  send(m) { if (this.relay) this.relay.send(other(ROLE), m); },
 
   start() {
-    this.makePeer();
-    clearInterval(this.hb);
-    this.hb = setInterval(() => this.heartbeat(), 3000);
+    this.stop();
+    this.linked = false; this.lastSeen = 0; this.hostAway = false; this.partnerSession = null;
+    this.diag = { server: false, found: false };
+    this.status = 'Підключаємося до сервера гри…';
+    this.relay = new Relay({ app: 'vgadai', code: CODE, me: ROLE, onMessage: (f, m, s) => this.receive(f, m, s), onStatus: (up) => this.onStatus(up) });
+    this.relay.start();
+    this.hb = setInterval(() => this.heartbeat(), 2500);
   },
   stop() {
-    clearInterval(this.hb); clearTimeout(this.retryT); clearTimeout(this.connectT);
-    const p = this.peer; this.peer = null; this.conn = null; this.pending = null;
-    if (p) try { p.destroy(); } catch (e) {}
+    clearInterval(this.hb);
+    if (this.relay) this.relay.stop();
+    this.relay = null; this.linked = false;
   },
-  makePeer() {
-    clearTimeout(this.retryT);
-    if (this.peer) { const old = this.peer; this.peer = null; try { old.destroy(); } catch (e) {} }
-    this.status = 'Підключаємося до сервера гри…';
-    this.diag.server = false;
-    const p = ROLE === 'A' ? new Peer(PREFIX + CODE, this.opts()) : new Peer(this.opts());
-    this.peer = p;
-    p.on('open', () => {
-      if (p !== this.peer) return;
-      this.status = ROLE === 'B' ? 'Сервер на зв’язку — шукаємо гру…' : 'Онлайн';
-      this.diag.server = true;
-      if (ROLE === 'B') this.connect();
-      render();
-    });
-    p.on('connection', (c) => {
-      if (p !== this.peer) return;
-      if (ROLE !== 'A') { c.close(); return; }
-      this.attach(c);
-    });
-    p.on('disconnected', () => {
-      if (p !== this.peer) return;
-      this.status = 'Зв\'язок із мережею перервався…';
-      render();
-      this.retryT = setTimeout(() => { if (p === this.peer && !p.destroyed && p.disconnected) { try { p.reconnect(); } catch (e) { this.makePeer(); } } }, 1500);
-    });
-    p.on('error', (err) => {
-      if (p !== this.peer) return;
-      const t = err && err.type;
-      if (t === 'peer-unavailable') {
-        this.hostAway = true; this.pending = null;
-        render();
-        this.scheduleConnect(3000);
-        return;
-      }
-      if (t === 'browser-incompatible') { this.status = 'Цей браузер не підтримує гру 😕 Спробуй Safari або Chrome'; render(); return; }
-      if (t === 'unavailable-id') this.status = 'Відкриваємо кімнату…';
-      else this.status = 'Проблеми зі зв\'язком, пробуємо ще…';
-      render();
-      this.retryT = setTimeout(() => {
-        if (p !== this.peer) return;
-        if (p.destroyed || t === 'unavailable-id') this.makePeer();
-        else if (p.disconnected) { try { p.reconnect(); } catch (e) { this.makePeer(); } }
-        else if (ROLE === 'B' && !this.conn) this.connect();
-      }, 2500);
-    });
-  },
-  scheduleConnect(ms) {
-    clearTimeout(this.connectT);
-    this.connectT = setTimeout(() => this.connect(), ms);
-  },
-  connect() {
-    if (ROLE !== 'B' || this.conn) return;
-    const p = this.peer;
-    if (!p || p.destroyed) { this.makePeer(); return; }
-    if (p.disconnected) { try { p.reconnect(); } catch (e) { this.makePeer(); return; } this.scheduleConnect(2000); return; }
-    if (!p.open) { this.scheduleConnect(1000); return; }
-    if (this.pending) { try { this.pending.close(); } catch (e) {} }
-    const c = p.connect(PREFIX + CODE, { reliable: true, serialization: 'json' });
-    this.pending = c;
-    if (this.status.indexOf('Пряме') !== 0) this.status = 'Стукаємо до гри…';
-    c.on('iceStateChanged', (st) => {
-      if (this.pending !== c && this.conn !== c) return;
-      this.diag.found = true; this.diag.ice = st;
-      if (st === 'checking') this.status = 'Гру знайдено — встановлюємо пряме з’єднання…';
-      else if (st === 'failed') this.status = 'Пряме з’єднання не вдалося — пробуємо ще…';
-      render();
-    });
-    this.attach(c);
-    setTimeout(() => {
-      if (this.pending === c && !c.open) { this.pending = null; try { c.close(); } catch (e) {} this.scheduleConnect(1500); }
-    }, 9000);
-  },
-  attach(c) {
-    c.on('open', () => {
-      if (this.conn && this.conn !== c) { try { this.conn.close(); } catch (e) {} }
-      this.conn = c; this.pending = null; this.lastSeen = Date.now(); this.hostAway = false;
-      c.send({ t: 'hello', profile: ME_PROFILE, state: ROLE === 'B' ? S : null });
-      render();
-    });
-    c.on('data', (d) => {
-      if (this.conn !== c) return;
-      this.lastSeen = Date.now();
-      onMessage(d);
-    });
-    const gone = () => {
-      if (this.pending === c) this.pending = null;
-      if (this.conn !== c) return;
-      this.conn = null;
-      render();
-      if (ROLE === 'B') this.scheduleConnect(700);
-    };
-    c.on('close', gone);
-    c.on('error', gone);
-  },
-  kill() {
-    const c = this.conn; this.conn = null;
-    if (c) try { c.close(); } catch (e) {}
+  onStatus(up) {
+    this.diag.server = up > 0;
+    if (up) {
+      this.upAt = this.upAt || Date.now();
+      this.status = this.linked ? 'Онлайн' : ROLE === 'B' ? 'Сервер на зв’язку — шукаємо гру…' : 'Онлайн';
+      if (ROLE === 'B') { if (!this.linked) this.hello(); } else this.send({ t: 'hostup' });
+    } else {
+      this.upAt = 0;
+      this.status = 'Підключаємося до сервера гри…';
+    }
     render();
-    if (ROLE === 'B') this.scheduleConnect(200);
+  },
+  hello() { this.send({ t: 'hello', profile: ME_PROFILE, state: S }); },
+  receive(from, m, session) {
+    if (from !== other(ROLE) || !m) return;
+    this.lastSeen = Date.now();
+    if (!this.linked) {
+      if (ROLE === 'A' && m.t !== 'hello') { this.send({ t: 'who' }); return; }   // господар «впізнає» гостя лише за привітанням
+      this.linked = true; this.hostAway = false; this.diag.found = true; this.status = 'Онлайн';
+      render();
+    }
+    if (ROLE === 'B' && (m.t === 'who' || m.t === 'hostup')) { this.hello(); return; }
+    if (m.t === 'hello') { m.fresh = this.partnerSession !== session; this.partnerSession = session; }
+    onMessage(m);
   },
   heartbeat() {
-    if (!this.conn) return;
-    this.send({ t: 'ping' });
-    if (Date.now() - Math.max(this.lastSeen, this.visibleAt) > 10000) this.kill();
+    if (!this.ready()) return;
+    const now = Date.now();
+    if (this.linked && now - Math.max(this.lastSeen, this.visibleAt) > 10000) {
+      this.linked = false; this.partnerSession = null;
+      this.status = ROLE === 'B' ? 'Сервер на зв’язку — шукаємо гру…' : 'Онлайн';
+      render();
+    }
+    if (ROLE === 'B' && !this.linked) {
+      this.hello();
+      const away = this.upAt && now - this.upAt > 7000;
+      if (away !== this.hostAway) { this.hostAway = away; render(); }
+    } else if (this.linked) this.send({ t: 'ping' });
   },
   wake() {   // сторінка знову видима (iOS заморожує фонові вкладки)
     this.visibleAt = Date.now();
-    const p = this.peer;
-    if (!p) return;
-    if (p.destroyed) { this.makePeer(); return; }
-    if (p.disconnected) { try { p.reconnect(); } catch (e) { this.makePeer(); } }
-    if (this.conn) {
-      const since = Date.now();
-      this.send({ t: 'ping' });
-      setTimeout(() => { if (this.conn && this.lastSeen < since) this.kill(); }, 3500);
-    } else if (ROLE === 'B') this.connect();
+    if (!this.relay) return;
+    this.relay.wake();
+    if (this.linked) this.send({ t: 'ping' });
+    else if (ROLE === 'B') this.hello();
+    else this.send({ t: 'hostup' });
   },
 };
 
@@ -1530,7 +1531,7 @@ function onMessage(m) {
         const firstTime = S.phase === 'lobby';
         if (firstTime) startGame(S);
         commit();
-        toast(firstTime ? `${esc(S.players.B.nick)} у грі! 🎉` : `${esc(S.players.B.nick)} повертається 👋`);
+        if (m.fresh) toast(firstTime ? `${esc(S.players.B.nick)} у грі! 🎉` : `${esc(S.players.B.nick)} повертається 👋`);
       }
       return;
     case 'state':
@@ -1585,7 +1586,7 @@ function createRoom() {
   enterRoom();
 }
 function enterRoom() {
-  VIEW = null; lastStageKey = null; lastScores = {};
+  VIEW = null; lastStageKey = null; lastScores = {}; chatKnown = -1;
   if (ROLE === 'A' && !S) S = newState(CODE);
   if (ROLE === 'A') { S.players.A.nick = ME_PROFILE.nick; S.players.A.avatar = ME_PROFILE.avatar; }
   render();
@@ -1619,7 +1620,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 window.addEventListener('pageshow', (e) => { if (e.persisted && CODE) Net.wake(); });
 window.addEventListener('pagehide', () => { /* тримаємо стан у localStorage — повернемось */ });
 
-if (typeof Peer === 'undefined') {
+if (typeof mqtt === 'undefined' || typeof Relay === 'undefined' || !window.crypto || !crypto.subtle) {
   document.getElementById('app').innerHTML = '<div class="card wait"><h2>Не вдалося завантажити гру 😕</h2><p class="muted">Перевір інтернет і онови сторінку.</p></div>';
 } else {
   boot();

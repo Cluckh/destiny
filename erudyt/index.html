@@ -423,11 +423,12 @@ input:focus,textarea:focus{border-color:var(--pumpkin);box-shadow:0 0 0 4px rgba
 <div id="toasts"></div>
 <div id="fx"></div>
 
-<script src="./peerjs.min.js"></script>
+<script src="./mqtt.min.js"></script>
+<script src="./relay.js"></script>
 <script>
 'use strict';
 /* =========================================================
-   Ерудит — сімейна вікторина на 2–4 гравців через WebRTC (PeerJS)
+   Ерудит — сімейна вікторина на 2–4 гравців; зв’язок через relay.js (MQTT-брокери)
    Господар кімнати тримає стан гри й таймери, гості надсилають відповіді.
    ========================================================= */
 
@@ -887,7 +888,6 @@ function mountEditor(root, profile, onChange) {
 }
 
 /* ---------- global state ---------- */
-const PREFIX = 'erudyt-';
 const MAX_PLAYERS = 4;
 const OPT_COLORS = ['#f08a3c', '#7fb7d9', '#93b977', '#e35a72'];
 const LETTERS = ['А', 'Б', 'В', 'Г'];
@@ -994,21 +994,20 @@ function renderConnect() {
     <button class="btn ghost small" id="btnLeave">Вийти</button>`;
   $('#btnLeave', el).onclick = leaveRoom;
   const r = $('#btnRetry', el);
-  if (r) r.onclick = () => { Net.since = Date.now(); Net.hostAway = false; Net.diag = { server: false, found: false, ice: '' }; Net.pending = null; Net.makePeer(); el.dataset.k = ''; renderConnect(); };
+  if (r) r.onclick = () => { Net.since = Date.now(); Net.hostAway = false; Net.full = false; Net.start(); el.dataset.k = ''; renderConnect(); };
 }
 
 function connectHelpHTML() {
   const d = Net.diag;
-  const mark = (ok, fail) => (ok ? '✓' : fail ? '✕' : '…');
-  const iceFail = d.ice === 'failed';
+  const mark = (ok) => (ok ? '✓' : '…');
   return `<div class="card help">
       <div class="lbl">Довго не виходить?</div>
-      ${iceFail ? '<p><b>Схоже, ваші мережі не пускають пряме з’єднання.</b> Найчастіше допомагає Wi-Fi замість мобільного інтернету (або навпаки).</p>' : ''}
+      ${!d.server ? '<p><b>Немає зв’язку із сервером гри.</b> Перевір, чи працює інтернет на телефоні.</p>' : ''}
       <p>📱 Той, хто створив гру, має тримати її <b>відкритою на екрані</b>, а не згорнутою.</p>
       <p>📶 Перемкнись між Wi-Fi і мобільним інтернетом.</p>
       <p>🛡️ Вимкни VPN, якщо він увімкнений.</p>
       <p>🧭 Якщо посилання відкрилось у Telegram чи Instagram, натисни ⋯ → «Відкрити в Safari».</p>
-      <div class="diag">Сервер ${mark(d.server)} · Гру знайдено ${mark(d.found)} · Пряме з’єднання ${mark(d.ice === 'connected' || d.ice === 'completed', iceFail)}</div>
+      <div class="diag">Сервер ${mark(d.server)} · Гру знайдено ${mark(d.found)}</div>
       <button class="btn ghost small" id="btnRetry" type="button">🔄 Спробувати ще раз</button>
     </div>`;
 }
@@ -1510,176 +1509,118 @@ function commit() {   // тільки господар
 }
 
 /* =========================================================
-   Network (PeerJS / WebRTC). Зірка: усі гості з’єднані з господарем.
+   Network — через relay.js (публічні MQTT-брокери, шифрування ключем кімнати).
+   Господар тримає стан; гості шлють йому дії, він розсилає стан усім.
    ========================================================= */
-// Сервери для обходу домашніх і мобільних мереж. STUN підказує телефону його зовнішню адресу,
-// TURN передає дані через себе, коли прямого з'єднання немає (часто буває між країнами й на мобільному інтернеті).
-const ICE_SERVERS = [
-  { urls: ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478'] },
-  { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' },
-  { urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443', 'turn:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' },
-];
 const Net = {
-  peer: null, conn: null, pending: null, conns: new Map(), seen: new Map(),
-  lastSeen: 0, visibleAt: 0, offset: 0, bestRtt: Infinity,
-  hostAway: false, diag: { server: false, found: false, ice: '' }, since: 0, full: false, status: 'Підключаємося до мережі…', retryT: null, connectT: null, hb: null,
-  ready() { return !!(this.peer && this.peer.open); },
-  opts() {
-    const ps = new URLSearchParams(location.search).get('ps');   // для локального тесту: ?ps=localhost:9000
-    const base = { debug: 1, config: { iceServers: ICE_SERVERS } };
-    if (ps) { const [host, port] = ps.split(':'); return Object.assign(base, { host, port: +port || 9000, path: '/', secure: false }); }
-    return base;
-  },
-  send(m) { if (this.conn && this.conn.open) { try { this.conn.send(m); } catch (e) {} } },
-  sendTo(pid, m) { const c = this.conns.get(pid); if (c && c.open) { try { c.send(m); } catch (e) {} } },
-  broadcast(m, except) { this.conns.forEach((c, pid) => { if (pid !== except && c.open) { try { c.send(m); } catch (e) {} } }); },
+  relay: null, linked: false, conns: new Map(),   // господар: pid → коли востаннє чули
+  lastSeen: 0, visibleAt: 0, upAt: 0, offset: 0, bestRtt: Infinity,
+  hostAway: false, diag: { server: false, found: false }, since: 0, full: false, status: 'Підключаємося до сервера гри…', hb: null,
+  get conn() { return this.linked; },
+  ready() { return !!(this.relay && this.relay.up); },
+  send(m) { if (this.relay) this.relay.send('host', m); },
+  sendTo(pid, m) { if (this.relay) this.relay.send(pid, m); },
+  broadcast(m, except) { if (this.relay) this.relay.send('*', m, except); },
 
-  start() { this.makePeer(); clearInterval(this.hb); this.hb = setInterval(() => this.heartbeat(), 3000); },
-  stop() {
-    clearInterval(this.hb); clearTimeout(this.retryT); clearTimeout(this.connectT);
-    const p = this.peer; this.peer = null; this.conn = null; this.pending = null; this.conns.clear(); this.seen.clear();
-    if (p) try { p.destroy(); } catch (e) {}
-  },
-  makePeer() {
-    clearTimeout(this.retryT);
-    if (this.peer) { const old = this.peer; this.peer = null; try { old.destroy(); } catch (e) {} }
+  start() {
+    this.stop();
+    this.linked = false; this.lastSeen = 0; this.upAt = 0; this.hostAway = false; this.bestRtt = Infinity;
+    this.diag = { server: false, found: false };
     this.status = 'Підключаємося до сервера гри…';
-    this.diag.server = false;
-    const p = IS_HOST ? new Peer(PREFIX + CODE, this.opts()) : new Peer(this.opts());
-    this.peer = p;
-    p.on('open', () => { if (p !== this.peer) return; this.status = IS_HOST ? 'Онлайн' : 'Сервер на зв’язку — шукаємо гру…'; this.diag.server = true; if (!IS_HOST) this.connect(); render(); });
-    p.on('connection', (c) => { if (p !== this.peer) return; if (!IS_HOST) { c.close(); return; } this.attachGuest(c); });
-    p.on('disconnected', () => {
-      if (p !== this.peer) return;
-      this.status = 'Зв’язок із мережею перервався…'; render();
-      this.retryT = setTimeout(() => { if (p === this.peer && !p.destroyed && p.disconnected) { try { p.reconnect(); } catch (e) { this.makePeer(); } } }, 1500);
-    });
-    p.on('error', (err) => {
-      if (p !== this.peer) return;
-      const t = err && err.type;
-      if (t === 'peer-unavailable') { this.hostAway = true; this.pending = null; render(); this.scheduleConnect(3000); return; }
-      if (t === 'browser-incompatible') { this.status = 'Цей браузер не підтримує гру 😕 Спробуй Safari або Chrome'; render(); return; }
-      this.status = t === 'unavailable-id' ? 'Відкриваємо кімнату…' : 'Проблеми зі зв’язком, пробуємо ще…';
+    this.relay = new Relay({ app: 'erudyt', code: CODE, me: IS_HOST ? 'host' : PID, onMessage: (f, m) => this.receive(f, m), onStatus: (up) => this.onStatus(up) });
+    this.relay.start();
+    this.hb = setInterval(() => this.heartbeat(), 2500);
+  },
+  stop() {
+    clearInterval(this.hb);
+    if (this.relay) this.relay.stop();
+    this.relay = null; this.linked = false; this.conns.clear();
+  },
+  onStatus(up) {
+    this.diag.server = up > 0;
+    if (up) {
+      this.upAt = this.upAt || Date.now();
+      this.status = IS_HOST || this.linked ? 'Онлайн' : 'Сервер на зв’язку — шукаємо гру…';
+      if (IS_HOST) this.broadcast({ t: 'hostup' }); else if (!this.linked) this.hello();
+    } else {
+      this.upAt = 0;
+      this.status = 'Підключаємося до сервера гри…';
+    }
+    render();
+  },
+  hello() { if (!this.full) this.send({ t: 'hello', pid: PID, profile: ME_PROFILE }); },
+  receive(from, m) {
+    if (!m || typeof m !== 'object') return;
+    if (IS_HOST) {
+      if (from === 'host') return;
+      if (m.t === 'hello') { this.onHello(from, m); return; }
+      if (!this.conns.has(from)) { this.sendTo(from, { t: 'who' }); return; }
+      this.conns.set(from, Date.now());
+      if (m.t === 'ping') { this.sendTo(from, { t: 'pong', c: m.c, h: Date.now() }); return; }
+      onHostMessage(from, m);
+      return;
+    }
+    if (from !== 'host') return;
+    this.lastSeen = Date.now();
+    if (m.t === 'who' || m.t === 'hostup') { this.hello(); return; }
+    if (!this.linked && m.t !== 'full') {
+      this.linked = true; this.hostAway = false; this.diag.found = true; this.status = 'Онлайн';
+      this.send({ t: 'ping', c: Date.now() });
       render();
-      this.retryT = setTimeout(() => {
-        if (p !== this.peer) return;
-        if (p.destroyed || t === 'unavailable-id') this.makePeer();
-        else if (p.disconnected) { try { p.reconnect(); } catch (e) { this.makePeer(); } }
-        else if (!IS_HOST && !this.conn) this.connect();
-      }, 2500);
-    });
+    }
+    onGuestMessage(m);
   },
 
   /* --- host side --- */
-  attachGuest(c) {
-    c.on('data', (d) => {
-      if (!d || typeof d !== 'object') return;
-      if (d.t === 'hello') { this.onHello(c, d); return; }
-      const pid = c._pid;
-      if (!pid || this.conns.get(pid) !== c) return;
-      this.seen.set(pid, Date.now());
-      if (d.t === 'ping') { try { c.send({ t: 'pong', c: d.c, h: Date.now() }); } catch (e) {} return; }
-      onHostMessage(pid, d);
-    });
-    const gone = () => {
-      const pid = c._pid;
-      if (pid && this.conns.get(pid) === c) {
-        this.conns.delete(pid); this.seen.delete(pid);
-        if (S && setOnline()) {
-          if (S.phase === 'question' && onlineList().every((p) => S.q.answers[p])) closeQuestion(S);
-          else if (S.phase === 'reveal' && onlineList().every((p) => S.ready[p])) advance(S);
-          commit();
-        }
-      }
-    };
-    c.on('close', gone); c.on('error', gone);
+  dropGuest(pid) {
+    if (!this.conns.delete(pid)) return;
+    if (S && setOnline()) {
+      if (S.phase === 'question' && onlineList().every((p) => S.q.answers[p])) closeQuestion(S);
+      else if (S.phase === 'reveal' && onlineList().every((p) => S.ready[p])) advance(S);
+      commit();
+    }
   },
-  onHello(c, d) {
-    const pid = String(d.pid || '').slice(0, 24);
-    if (!pid || pid === PID || !d.profile) { c.close(); return; }
+  onHello(pid, d) {
+    pid = String(pid || '').slice(0, 24);
+    if (!pid || pid === PID || !d.profile) return;
     const known = !!S.players[pid];
     if (!known && S.order.length >= MAX_PLAYERS) {
       // місце звільняємо лише за рахунок гравця, якого немає онлайн і хто ще не грав
       const freeable = S.phase === 'lobby' ? S.order.find((p) => p !== S.host && !isOnline(p)) : null;
-      if (!freeable) { try { c.send({ t: 'full' }); } catch (e) {} setTimeout(() => c.close(), 300); return; }
+      if (!freeable) { this.sendTo(pid, { t: 'full' }); return; }
       S.order = S.order.filter((p) => p !== freeable); delete S.players[freeable];
     }
-    const old = this.conns.get(pid);
-    if (old && old !== c) { old._pid = null; try { old.close(); } catch (e) {} }
-    c._pid = pid;
-    this.conns.set(pid, c);
-    this.seen.set(pid, Date.now());
+    const wasHere = this.conns.has(pid);
+    this.conns.set(pid, Date.now());
     if (!known) { S.players[pid] = newPlayer(d.profile); S.order.push(pid); }
     else { S.players[pid].nick = String(d.profile.nick || S.players[pid].nick).slice(0, 16); S.players[pid].avatar = d.profile.avatar || S.players[pid].avatar; }
     setOnline();
     commit();
-    toast(known ? `${esc(S.players[pid].nick)} повертається 👋` : `${esc(S.players[pid].nick)} у грі! 🎉`);
+    if (!wasHere) toast(known ? `${esc(S.players[pid].nick)} повертається 👋` : `${esc(S.players[pid].nick)} у грі! 🎉`);
   },
 
-  /* --- guest side --- */
-  scheduleConnect(ms) { clearTimeout(this.connectT); this.connectT = setTimeout(() => this.connect(), ms); },
-  connect() {
-    if (IS_HOST || this.conn || this.full) return;
-    const p = this.peer;
-    if (!p || p.destroyed) { this.makePeer(); return; }
-    if (p.disconnected) { try { p.reconnect(); } catch (e) { this.makePeer(); return; } this.scheduleConnect(2000); return; }
-    if (!p.open) { this.scheduleConnect(1000); return; }
-    if (this.pending) { try { this.pending.close(); } catch (e) {} }
-    const c = p.connect(PREFIX + CODE, { reliable: true, serialization: 'json' });
-    this.pending = c;
-    if (this.status.indexOf('Пряме') !== 0) this.status = 'Стукаємо до гри…';
-    c.on('iceStateChanged', (st) => {
-      if (this.pending !== c && this.conn !== c) return;
-      this.diag.found = true; this.diag.ice = st;
-      if (st === 'checking') this.status = 'Гру знайдено — встановлюємо пряме з’єднання…';
-      else if (st === 'failed') this.status = 'Пряме з’єднання не вдалося — пробуємо ще…';
-      render();
-    });
-    c.on('open', () => {
-      if (this.conn && this.conn !== c) { try { this.conn.close(); } catch (e) {} }
-      this.conn = c; this.pending = null; this.lastSeen = Date.now(); this.hostAway = false;
-      c.send({ t: 'hello', pid: PID, profile: ME_PROFILE });
-      c.send({ t: 'ping', c: Date.now() });
-      render();
-    });
-    c.on('data', (d) => { if (this.conn !== c) return; this.lastSeen = Date.now(); onGuestMessage(d); });
-    const gone = () => {
-      if (this.pending === c) this.pending = null;
-      if (this.conn !== c) return;
-      this.conn = null; render();
-      this.scheduleConnect(700);
-    };
-    c.on('close', gone); c.on('error', gone);
-    setTimeout(() => { if (this.pending === c && !c.open) { this.pending = null; try { c.close(); } catch (e) {} this.scheduleConnect(1500); } }, 9000);
-  },
-  kill() {
-    const c = this.conn; this.conn = null;
-    if (c) try { c.close(); } catch (e) {}
-    render();
-    this.scheduleConnect(200);
-  },
   heartbeat() {
+    if (!this.ready()) return;
+    const now = Date.now();
     if (IS_HOST) {
-      const now = Date.now();
-      this.seen.forEach((t, pid) => { if (now - Math.max(t, this.visibleAt) > 12000) { const c = this.conns.get(pid); if (c) try { c.close(); } catch (e) {} } });
+      Array.from(this.conns).forEach(([pid, t]) => { if (now - Math.max(t, this.visibleAt) > 12000) this.dropGuest(pid); });
       return;
     }
-    if (!this.conn) return;
-    this.send({ t: 'ping', c: Date.now() });
-    if (Date.now() - Math.max(this.lastSeen, this.visibleAt) > 10000) this.kill();
+    if (this.linked && now - Math.max(this.lastSeen, this.visibleAt) > 10000) {
+      this.linked = false; this.status = 'Сервер на зв’язку — шукаємо гру…'; render();
+    }
+    if (!this.linked) {
+      this.hello();
+      const away = !!this.upAt && now - this.upAt > 7000;
+      if (away !== this.hostAway) { this.hostAway = away; render(); }
+    } else this.send({ t: 'ping', c: now });
   },
-  wake() {
+  wake() {   // сторінка знову видима (iOS заморожує фонові вкладки)
     this.visibleAt = Date.now();
-    const p = this.peer;
-    if (!p) return;
-    if (p.destroyed) { this.makePeer(); return; }
-    if (p.disconnected) { try { p.reconnect(); } catch (e) { this.makePeer(); } }
-    if (IS_HOST) { scheduleHost(); return; }
-    if (this.conn) {
-      const since = Date.now();
-      this.send({ t: 'ping', c: since });
-      setTimeout(() => { if (this.conn && this.lastSeen < since) this.kill(); }, 3500);
-    } else this.connect();
+    if (!this.relay) return;
+    this.relay.wake();
+    if (IS_HOST) { scheduleHost(); this.broadcast({ t: 'hostup' }); return; }
+    if (this.linked) this.send({ t: 'ping', c: Date.now() }); else this.hello();
   },
 };
 
@@ -1782,7 +1723,7 @@ window.addEventListener('hashchange', boot);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && CODE) Net.wake(); });
 window.addEventListener('pageshow', (e) => { if (e.persisted && CODE) Net.wake(); });
 
-if (typeof Peer === 'undefined') {
+if (typeof mqtt === 'undefined' || typeof Relay === 'undefined' || !window.crypto || !crypto.subtle) {
   document.getElementById('app').innerHTML = '<div class="card wait"><h2>Не вдалося завантажити гру 😕</h2><p class="muted">Перевір інтернет і онови сторінку.</p></div>';
 } else {
   boot();
