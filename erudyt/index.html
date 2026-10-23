@@ -114,7 +114,7 @@ input:focus,textarea:focus{border-color:var(--pumpkin);box-shadow:0 0 0 4px rgba
 .btn:disabled{filter:grayscale(.7) brightness(.75);cursor:default}
 .btn.mustard{--b:var(--mustard);--bd:var(--mustard-d)}
 .btn.sage{--b:var(--sage);--bd:var(--sage-d)}
-.btn.sky{--b:var(--sky);--bd:var(--sky-d)}
+.btn.blue{--b:var(--sky);--bd:var(--sky-d)}
 .btn.ghost{--b:var(--panel-2);--bd:var(--shadow);color:var(--cream)}
 .btn.ghost::before{background:rgba(255,255,255,.07)}
 .btn.small{font-size:14px;padding:12px 14px;border-radius:14px}
@@ -171,6 +171,7 @@ input:focus,textarea:focus{border-color:var(--pumpkin);box-shadow:0 0 0 4px rgba
 .spin{width:18px;height:18px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:var(--pumpkin);animation:spin .8s linear infinite;flex:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 .linkbox{font-size:13px;color:var(--muted);background:#231936;border-radius:12px;padding:10px 12px;word-break:break-all;font-weight:700}
+.linkbox.sel{-webkit-user-select:all;user-select:all;-webkit-touch-callout:default;font-size:14px;color:var(--cream);cursor:text}
 
 /* ---------- game top ---------- */
 .top{display:flex;align-items:center;gap:8px}
@@ -1021,18 +1022,42 @@ async function shareInvite() {
   const text = `${P(S.host).nick} кличе тебе на вікторину «Ерудит» 🦉`;
   if (navigator.share) {
     try { await navigator.share({ title: 'Ерудит', text, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+    showLink(url); return;   // меню «Поділитися» не відкрилось (буває у вбудованих браузерах) — показуємо посилання
   }
   copyInvite();
 }
 async function copyInvite() {
   const url = inviteURL();
-  try { await navigator.clipboard.writeText(url); toast('Посилання скопійовано 📋'); }
-  catch (e) { prompt('Скопіюй посилання:', url); }
+  if (await copyText(url)) toast('Посилання скопійовано 📋 — встав його в месенджер');
+  else showLink(url);
+}
+async function copyText(t) {
+  try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(t); return true; } } catch (e) {}
+  try {   // запасний спосіб для вбудованих браузерів (Telegram, Instagram)
+    const ta = document.createElement('textarea');
+    ta.value = t; ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px';
+    document.body.appendChild(ta); ta.focus(); ta.select(); ta.setSelectionRange(0, t.length);
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  } catch (e) { return false; }
+}
+function showLink(url) {
+  openSheet(`<h3>🔗 Посилання на гру</h3>
+    <p class="muted" style="margin:0">Затисни посилання → «Скопіювати» й встав його в месенджер.</p>
+    <div class="linkbox sel">${esc(url)}</div>
+    <button class="btn" id="lkCopy" type="button">Скопіювати</button>
+    <button class="btn ghost small" id="lkClose" type="button">Закрити</button>`, (b) => {
+    $('#lkCopy', b).onclick = async () => { if (await copyText(url)) { closeSheet(); toast('Посилання скопійовано 📋'); } else toast('Затисни посилання вище й вибери «Скопіювати»'); };
+    $('#lkClose', b).onclick = closeSheet;
+  });
 }
 
 /* ---------- room (lobby / game / final) ---------- */
 function renderRoom() {
   const first = show('room');
+  $('#react').classList.toggle('hidden', S.phase === 'lobby');   // у лобі панель емоцій перекривала кнопки
   renderTop();
   renderBanner();
   const k = stageKey();
@@ -1093,7 +1118,9 @@ function buildLobby(st) {
     <div class="stage-head"><span class="tag">Кімната</span><h2>Збираємо команду 🦉</h2>
       <p class="muted">${IS_HOST ? 'Надішли посилання рідним — кожен відкриє його на своєму телефоні.' : `Чекаємо, поки ${nickOf(S.host)} почне гру.`}</p></div>
     <div class="card" id="slots">${slotsHTML()}</div>
-    ${IS_HOST ? `<button class="btn sky" id="btnShare">📨 Запросити рідних</button>` : ''}
+    ${IS_HOST ? `<button class="btn blue" id="btnShare">📨 Запросити рідних</button>
+      <button class="btn ghost small" id="btnCopy">Скопіювати посилання</button>
+      <div class="linkbox sel">${esc(inviteURL())}</div>` : ''}
     <div class="card">
       <div class="lbl">Скільки питань</div>
       <div class="seg" id="setCount">${[10, 15, 20].map((n) => `<button data-v="${n}" class="${set.count === n ? 'on' : ''}" ${IS_HOST ? '' : 'disabled'}><b>${n}</b><small>${n === 10 ? '≈ 7 хв' : n === 15 ? '≈ 10 хв' : '≈ 14 хв'}</small></button>`).join('')}</div>
@@ -1107,6 +1134,7 @@ function buildLobby(st) {
     ${IS_HOST ? `<button class="btn" id="btnStart">Почати гру ➜</button><p class="hint center" id="startHint" style="margin:-6px 0 0"></p>` : `<div class="status"><span class="dots"><i></i><i></i><i></i></span> ${nickOf(S.host)} налаштовує гру</div>`}`;
   if (IS_HOST) {
     $('#btnShare', st).onclick = shareInvite;
+    $('#btnCopy', st).onclick = copyInvite;
     $('#setCount', st).onclick = (e) => { const b = e.target.closest('button'); if (b) dispatch({ k: 'settings', count: +b.dataset.v }); };
     $('#setTimer', st).onclick = (e) => { const b = e.target.closest('button'); if (b) dispatch({ k: 'settings', timer: +b.dataset.v }); };
     $('#btnStart', st).onclick = () => dispatch({ k: 'start' });
@@ -1312,7 +1340,7 @@ function openMenu() {
   openSheet(`
     <h3>Меню</h3>
     <div class="card" style="padding:14px"><div class="lbl">Гравці</div>${slotsHTML()}</div>
-    <button class="btn sky" id="mInvite">🔗 Запросити ще когось</button>
+    <button class="btn blue" id="mInvite">🔗 Запросити ще когось</button>
     <button class="btn ghost" id="mProfile">🎨 Змінити героя</button>
     ${IS_HOST && inGame ? '<button class="btn ghost" id="mEnd">🏁 Завершити гру зараз</button>' : ''}
     <button class="btn ghost" id="mLeave">🚪 Вийти з кімнати</button>`, (b) => {
