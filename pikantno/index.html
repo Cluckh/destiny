@@ -291,6 +291,33 @@ input:focus,textarea:focus{border-color:var(--pumpkin);box-shadow:0 0 0 4px rgba
 
 .help p{margin:0 0 8px;font-size:15px;font-weight:700}
 .help .diag{font-size:13px;color:var(--muted);background:#231936;border-radius:12px;padding:9px 12px;margin:6px 0 12px;font-weight:800}
+
+/* ---------- список кімнат ---------- */
+.logo.compact{padding:2px 0 0}
+.logo.compact .logo-badge{width:52px;height:52px;font-size:28px;margin-bottom:8px}
+.logo.compact h1{font-size:32px}
+.logo.compact p{display:none}
+.rooms-card{padding:14px}
+.rooms-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.rooms-head .lbl{margin:0}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--muted)}
+.live i{width:8px;height:8px;border-radius:50%;background:#7ee08a;box-shadow:0 0 8px #7ee08a;animation:pulse 1.4s ease-in-out infinite}
+#roomsBox{display:flex;flex-direction:column;gap:10px}
+.room{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:3px solid transparent;border-radius:18px;background:var(--panel-2);padding:9px 12px 9px 9px;
+  box-shadow:0 5px 0 var(--shadow);color:var(--cream);animation:rise .4s var(--ease) both;transition:transform .2s var(--spring),border-color .2s}
+.room:active:not(:disabled){transform:scale(.97)}
+.room .rm-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.room .rm-t b{font-family:'Unbounded';font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.room .rm-t small{font-size:13px;color:var(--muted);font-weight:800}
+.room .rm-go{flex:none;font-family:'Unbounded';font-size:13px;font-weight:700;background:var(--pumpkin);color:var(--ink);padding:8px 12px;border-radius:12px;box-shadow:0 3px 0 var(--pumpkin-d)}
+.room .rm-t small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:380px){.room .rm-go .gl{display:none}.room .rm-go{padding:8px 13px;font-size:15px}.room{gap:10px}}
+.room.busy{opacity:.55}.room.busy .rm-go{background:#4a3a5e;color:var(--muted);box-shadow:none}
+.tag.mine{font-size:10px;padding:3px 7px;vertical-align:2px}
+.rooms-empty{text-align:center;color:var(--muted);font-weight:700;padding:14px 6px;line-height:1.5;display:flex;flex-direction:column;align-items:center;gap:8px}
+.me-row{display:flex;align-items:center;gap:12px;padding:12px}
+.me-row .me-t{flex:1;min-width:0;display:flex;flex-direction:column}
+.me-row .me-t b{font-family:'Unbounded';font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* toast & sheet */
 #toasts{position:fixed;top:calc(env(safe-area-inset-top) + 12px);left:0;right:0;z-index:40;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 16px}
 .toast{background:var(--cream);color:var(--ink);font-weight:900;border-radius:16px;padding:11px 16px;box-shadow:0 5px 0 #c9b28f,0 12px 24px rgba(0,0,0,.35);max-width:440px;text-align:center;animation:pop .45s var(--spring) both}
@@ -831,39 +858,103 @@ function show(view) {
   return true;
 }
 
+/* ---------- список кімнат (лобі) ---------- */
+const APP = 'pikantno';
+let LOBBY = null, JOIN_NOW = null, roomsTimer = null, annTimer = null, annLast = 0, annPending = null;
+function lobby() {
+  if (!LOBBY && window.RelayLobby) { LOBBY = new RelayLobby({ apps: [APP], onChange: () => renderRooms() }); LOBBY.start(); }
+  return LOBBY;
+}
+const isHostNow = () => ROLE === 'A';
+const roomInfo = () => ({ c: CODE, n: S.players.A.nick, a: S.players.A.avatar, ph: S.phase, p: S.players.B ? 2 : 1, m: 2, o: S.phase === 'lobby' });
+function roomStatus(i) { return i.ph === 'lobby' ? 'чекає гравців' : (i.ph === 'final' || i.ph === 'over') ? 'між партіями' : 'гра йде'; }
+const isMine = (c) => !!store.get('hosted:' + c, false) || !!store.get('state:' + c, null);
+function renderRooms() {
+  const box = $('#roomsBox'); if (!box || CODE) return;
+  const L = lobby(), list = L ? L.list(APP) : [];
+  const last = store.get('lastRoom', null);
+  const back = last && last.code && isMine(last.code) && !list.some((r) => r.info.c === last.code)
+    ? `<button class="btn ghost small" id="btnResume" type="button">↩ Повернутись у свою останню кімнату</button>` : '';
+  if (!list.length) {
+    box.innerHTML = (L && L.ready ? `<div class="rooms-empty"><span style="font-size:28px">🕯️</span>Поки ніхто не грає.<br>Створи кімнату — її одразу побачать усі, хто відкриє гру.</div>`
+      : `<div class="rooms-empty"><span class="spin"></span>Шукаємо відкриті кімнати…</div>`) + back;
+  } else {
+    box.innerHTML = list.map((r) => {
+      const i = r.info, mine = isMine(i.c), can = i.o || mine;
+      return `<button class="room ${can ? '' : 'busy'}" type="button" data-c="${esc(i.c)}" data-n="${esc(i.n)}" ${can ? '' : 'disabled'}>${ava(i.a, 'sm')}
+        <span class="rm-t"><b>${esc(i.n)}${mine ? ' <span class="tag mine">твоя</span>' : ''}</b><small>👥 ${i.p}/${i.m} · ${roomStatus(i)}</small></span>
+        <span class="rm-go">${mine ? '<span class="gl">Повернутись </span>↩' : can ? '<span class="gl">Увійти </span>➜' : 'Грають'}</span></button>`;
+    }).join('') + back;
+  }
+  const b = $('#btnResume', box);
+  if (b) b.onclick = () => { location.hash = last.hash; };
+}
+function joinRoom(code, nick) { JOIN_NOW = code; location.hash = '#r=' + code + '&n=' + encodeURIComponent(nick || ''); }
+function announceRoom(force) {   // господар оголошує свою кімнату в списку
+  if (!CODE || !S || !isHostNow()) return;
+  const L = lobby(); if (!L) return;
+  const now = Date.now();
+  if (!force && now - annLast < 1500) { clearTimeout(annPending); annPending = setTimeout(() => announceRoom(true), 1600); return; }
+  annLast = now;
+  const info = roomInfo();
+  L.whenUp(() => L.announce(APP, info));
+}
+function startAnnounce() {
+  clearInterval(annTimer);
+  if (!isHostNow()) return;
+  announceRoom(true);
+  annTimer = setInterval(() => announceRoom(true), 8000);
+}
+function stopAnnounce() {
+  clearInterval(annTimer); clearTimeout(annPending);
+  if (LOBBY && CODE && isHostNow()) LOBBY.clear(APP, CODE);
+}
+setInterval(() => { if (!CODE && VIEW === 'home') renderRooms(); }, 4000);
+window.addEventListener('pagehide', () => { if (LOBBY && CODE && S && isHostNow()) LOBBY.clearSync(APP, CODE); });   // закрили вкладку — прибираємо кімнату зі списку
+
 function renderHome() {
   show('home');
   const el = $('#scr-home');
-  const last = store.get('lastRoom', null);
   const joining = !!CODE;
+  const hasProf = !!ME_PROFILE;
   el.className = 'screen enter';
   el.innerHTML = `
-    <div class="logo"><div class="logo-badge spicy">🌶️</div><h1>Пікант<span>но</span></h1>
+    <div class="logo ${hasProf ? 'compact' : ''}"><div class="logo-badge spicy">🌶️</div><h1>Пікант<span>но</span></h1>
       <p class="muted">Гра для двох дорослих: відверті питання, сміливі завдання й спільні відкриття. Будь-яку карту можна пропустити.</p></div>
-    ${joining ? `<div class="card invite"><div class="ico">💌</div><div><b>${esc(HOST_NICK || 'Хтось')}</b> кличе тебе на пікантну гру. Створи свого героя й заходь.</div></div>` : ''}
-    <div class="card" id="editor"></div>
+    ${joining ? `<div class="card invite"><div class="ico">💌</div><div><b>${esc(HOST_NICK || 'Хтось')}</b> кличе тебе на пікантну гру. Створи свого героя й заходь.</div></div>`
+      : `<div class="card rooms-card"><div class="rooms-head"><span class="lbl">Відкриті кімнати</span><span class="live"><i></i>наживо</span></div><div id="roomsBox"></div></div>`}
+    ${hasProf ? `<div class="card me-row" id="meRow">${ava(ME_PROFILE.avatar, 'md')}<div class="me-t"><small class="muted">Ти граєш як</small><b>${esc(ME_PROFILE.nick)}</b></div><button class="chip" id="meEdit" type="button">✏️ Змінити</button></div>` : ''}
+    <div class="card ${hasProf ? 'hidden' : ''}" id="editor"></div>
     <label class="card gate" id="gate">
       <input type="checkbox" id="adult" ${store.get('adult', false) ? 'checked' : ''}>
       <span class="box">✓</span>
       <span><b>Мені вже є 18</b>, і я граю з власної згоди. Розумію, що будь-яку карту можна пропустити.</span>
     </label>
-    <button class="btn berry" id="btnGo">${joining ? 'Увійти в гру ➜' : 'Створити кімнату ➜'}</button>
-    ${!joining && last ? `<button class="btn ghost small" id="btnResume">↩ Повернутись в останню гру</button>` : ''}`;
+    <button class="btn berry" id="btnGo">${joining ? 'Увійти в гру ➜' : '➕ Створити кімнату'}</button>
+    ${joining ? '<button class="btn ghost small" id="btnBack" type="button">← До списку кімнат</button>' : ''}`;
   const get = mountEditor($('#editor', el), ME_PROFILE || {}, null);
-  const go = $('#btnGo', el), adult = $('#adult', el);
-  const sync = () => { go.disabled = !adult.checked; };
-  adult.onchange = () => { store.set('adult', adult.checked); sync(); };
-  sync();
-  go.onclick = () => {
-    if (!adult.checked) { $('#gate', el).classList.remove('shake'); void el.offsetWidth; $('#gate', el).classList.add('shake'); return; }
-    ME_PROFILE = get();
-    store.set('profile', ME_PROFILE);
+  const me = $('#meEdit', el);
+  if (me) me.onclick = () => { $('#editor', el).classList.remove('hidden'); $('#meRow', el).classList.add('hidden'); };
+  const saveProf = () => { ME_PROFILE = get(); store.set('profile', ME_PROFILE); };
+  const adult = $('#adult', el);
+  adult.onchange = () => store.set('adult', adult.checked);
+  const gateOk = () => { if (adult.checked) return true; const g = $('#gate', el); g.classList.remove('shake'); void g.offsetWidth; g.classList.add('shake'); toast('Спершу підтвердь, що тобі є 18'); return false; };
+  $('#btnGo', el).onclick = () => {
+    if (!gateOk()) return;
+    saveProf();
     if (joining) enterRoom(); else createRoom();
   };
-  const r = $('#btnResume', el);
-  if (r) r.onclick = () => { location.hash = last.hash; };
+  const back = $('#btnBack', el);
+  if (back) back.onclick = () => { history.replaceState(null, '', location.pathname + location.search); CODE = null; S = null; renderHome(); };
+  const rb = $('#roomsBox', el);
+  if (rb) rb.addEventListener('click', (e) => {
+    const b = e.target.closest('.room'); if (!b || b.disabled) return;
+    if (!gateOk()) return;
+    saveProf();
+    joinRoom(b.dataset.c, b.dataset.n);
+  });
+  if (!joining) { lobby(); renderRooms(); }
 }
-
 
 function renderConnect() {
   const first = show('connect');
@@ -1471,6 +1562,7 @@ function commit() {   // host only
   persist();
   Net.send({ t: 'state', s: S });
   render();
+  announceRoom();
 }
 
 /* =========================================================
@@ -1568,6 +1660,7 @@ function onMessage(m) {
       return;
     case 'state':
       if (ROLE !== 'B' || !m.s || m.s.code !== CODE) return;
+      if (S && S.code === m.s.code && (m.s.v || 0) < (S.v || 0)) return;   // запізнілий старіший стан
       {
         const wasNone = !S || S.phase === 'lobby';
         S = m.s; persist(); render();
@@ -1624,8 +1717,10 @@ function enterRoom() {
   if (ROLE === 'A') { S.players.A.nick = ME_PROFILE.nick; S.players.A.avatar = ME_PROFILE.avatar; }
   render();
   Net.start();
+  startAnnounce();
 }
 function leaveRoom() {
+  stopAnnounce();
   Net.stop();
   CODE = null; S = null; ROLE = null; HOST_NICK = '';
   history.replaceState(null, '', location.pathname + location.search);
@@ -1634,18 +1729,21 @@ function leaveRoom() {
 }
 function parseHash() {
   const p = new URLSearchParams(location.hash.slice(1));
-  return { code: (p.get('r') || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 16), nick: (p.get('n') || '').slice(0, 16) };
+  return { code: (p.get('r') || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 16), nick: (p.get('n') || '').slice(0, 16), j: p.get('j') === '1' };
 }
 function boot() {
   Net.stop();
   VIEW = null;
-  const { code, nick } = parseHash();
+  clearInterval(annTimer);
+  const { code, nick, j } = parseHash();
   if (!code) { CODE = null; S = null; renderHome(); return; }
   CODE = code; HOST_NICK = nick;
   ROLE = store.get('hosted:' + code, false) ? 'A' : 'B';
   S = store.get('state:' + code, null);
   if (S && S.code !== code) S = null;
-  if (ME_PROFILE && store.get('adult', false) && (ROLE === 'A' || S)) enterRoom();
+  const wantJoin = JOIN_NOW === code || j;
+  JOIN_NOW = null;
+  if (ME_PROFILE && store.get('adult', false) && (ROLE === 'A' || S) || (ME_PROFILE && store.get('adult', false) && wantJoin)) enterRoom();
   else renderHome();
 }
 window.addEventListener('hashchange', boot);
