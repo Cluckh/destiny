@@ -363,7 +363,7 @@ input:focus,textarea:focus{border-color:var(--pumpkin);box-shadow:0 0 0 4px rgba
 .game .arrow{font-family:'Unbounded';font-size:20px;color:var(--muted)}
 .g18{position:absolute;top:10px;right:12px;font-family:'Unbounded';font-size:11px;font-weight:800;background:var(--berry);color:var(--ink);padding:3px 7px;border-radius:8px}
 .room{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border-radius:18px;background:var(--panel-2);padding:9px 12px 9px 9px;text-decoration:none;color:var(--cream);
-  box-shadow:0 5px 0 var(--shadow);animation:rise .4s var(--ease) both}
+  box-shadow:0 5px 0 var(--shadow)}
 .room .rm-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .room .rm-t b{font-family:'Unbounded';font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .room .rm-t small{font-size:13px;color:var(--muted);font-weight:800}
@@ -511,7 +511,7 @@ function render() {
       <div class="games" id="games"></div>
       <p class="hint2">Збережи цю сторінку на головний екран — і всі ігри завжди під рукою.</p>`;
   }
-  $('#games').innerHTML = GAMES.map((g, k) => {
+  const gh = GAMES.map((g, k) => {
     const n = all.filter((r) => r.app === g.app && r.info.o).length;
     return `<a class="game" href="${base(g.app)}" style="animation-delay:${k * 0.07}s">${g.adult ? '<span class="g18">18+</span>' : ''}
       <span class="gi" style="background:${g.bg}">${g.icon}</span>
@@ -519,19 +519,20 @@ function render() {
         <span class="now ${n ? '' : 'zero'}"><i></i>${n ? `${n} ${n === 1 ? 'кімната чекає' : n < 5 ? 'кімнати чекають' : 'кімнат чекають'}` : 'зараз вільно'}</span></span>
       <span class="arrow">›</span></a>`;
   }).join('');
+  if ($('#games').dataset.sig !== gh) { $('#games').dataset.sig = gh; $('#games').innerHTML = gh; }
   const box = $('#rooms');
+  let html;
   if (!all.length) {
-    box.innerHTML = L && L.ready ? '<div class="rooms-empty"><span style="font-size:28px">🕯️</span>Поки ніхто не грає. Обери гру нижче й створи кімнату — її побачать усі.</div>'
+    html = L && L.ready ? '<div class="rooms-empty"><span style="font-size:28px">🕯️</span>Поки ніхто не грає. Обери гру нижче й створи кімнату — її побачать усі.</div>'
       : '<div class="rooms-empty"><span class="spin"></span>Шукаємо відкриті кімнати…</div>';
-    return;
-  }
-  box.innerHTML = all.map((r) => {
+  } else html = all.map((r) => {
     const g = GAMES.find((x) => x.app === r.app), i = r.info, mine = isMine(r.app, i.c), can = i.o || mine;
     const href = base(r.app) + '#r=' + encodeURIComponent(i.c) + '&n=' + encodeURIComponent(i.n || '') + '&j=1';
     return `<a class="room ${can ? '' : 'busy'}" ${can ? `href="${href}"` : ''}>${ava(i.a, 'sm')}
       <span class="rm-t"><b>${esc(i.n)}</b><small>${g.icon} ${g.name} · 👥 ${i.p}/${i.m} · ${status(i)}</small></span>
       <span class="rm-go">${mine ? '<span class="gl">Повернутись </span>↩' : can ? '<span class="gl">Увійти </span>➜' : 'Грають'}</span></a>`;
   }).join('');
+  if (box.dataset.sig !== html) { box.dataset.sig = html; box.innerHTML = html; }   // без зайвих перемальовувань
 }
 render();
 setInterval(render, 4000);

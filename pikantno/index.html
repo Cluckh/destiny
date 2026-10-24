@@ -304,7 +304,7 @@ input:focus,textarea:focus{border-color:var(--pumpkin);box-shadow:0 0 0 4px rgba
 .live i{width:8px;height:8px;border-radius:50%;background:#7ee08a;box-shadow:0 0 8px #7ee08a;animation:pulse 1.4s ease-in-out infinite}
 #roomsBox{display:flex;flex-direction:column;gap:10px}
 .room{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:3px solid transparent;border-radius:18px;background:var(--panel-2);padding:9px 12px 9px 9px;
-  box-shadow:0 5px 0 var(--shadow);color:var(--cream);animation:rise .4s var(--ease) both;transition:transform .2s var(--spring),border-color .2s}
+  box-shadow:0 5px 0 var(--shadow);color:var(--cream);transition:transform .2s var(--spring),border-color .2s}
 .room:active:not(:disabled){transform:scale(.97)}
 .room .rm-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .room .rm-t b{font-family:'Unbounded';font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -875,17 +875,21 @@ function renderRooms() {
   const last = store.get('lastRoom', null);
   const back = last && last.code && isMine(last.code) && !list.some((r) => r.info.c === last.code)
     ? `<button class="btn ghost small" id="btnResume" type="button">↩ Повернутись у свою останню кімнату</button>` : '';
+  let html;
   if (!list.length) {
-    box.innerHTML = (L && L.ready ? `<div class="rooms-empty"><span style="font-size:28px">🕯️</span>Поки ніхто не грає.<br>Створи кімнату — її одразу побачать усі, хто відкриє гру.</div>`
+    html = (L && L.ready ? `<div class="rooms-empty"><span style="font-size:28px">🕯️</span>Поки ніхто не грає.<br>Створи кімнату — її одразу побачать усі, хто відкриє гру.</div>`
       : `<div class="rooms-empty"><span class="spin"></span>Шукаємо відкриті кімнати…</div>`) + back;
   } else {
-    box.innerHTML = list.map((r) => {
+    html = list.map((r) => {
       const i = r.info, mine = isMine(i.c), can = i.o || mine;
       return `<button class="room ${can ? '' : 'busy'}" type="button" data-c="${esc(i.c)}" data-n="${esc(i.n)}" ${can ? '' : 'disabled'}>${ava(i.a, 'sm')}
         <span class="rm-t"><b>${esc(i.n)}${mine ? ' <span class="tag mine">твоя</span>' : ''}</b><small>👥 ${i.p}/${i.m} · ${roomStatus(i)}</small></span>
         <span class="rm-go">${mine ? '<span class="gl">Повернутись </span>↩' : can ? '<span class="gl">Увійти </span>➜' : 'Грають'}</span></button>`;
     }).join('') + back;
   }
+  if (box.dataset.sig === html) return;   // нічого не змінилось — не чіпаємо, щоб картки не «тремтіли» й не губили дотик
+  box.dataset.sig = html;
+  box.innerHTML = html;
   const b = $('#btnResume', box);
   if (b) b.onclick = () => { location.hash = last.hash; };
 }
