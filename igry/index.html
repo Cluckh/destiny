@@ -7,7 +7,7 @@
 <meta name="description" content="Усі наші онлайн-ігри й відкриті кімнати на одній сторінці.">
 <meta name="theme-color" content="#1d1530">
 <meta property="og:title" content="Наші ігри 🎲">
-<meta property="og:description" content="Вгадай мене, Ерудит і Пікантно — заходь, тут видно всі відкриті кімнати.">
+<meta property="og:description" content="Вгадай мене й Ерудит — заходь, тут видно всі відкриті кімнати.">
 <meta property="og:image" content="https://cluckh.github.io/destiny/erudyt/og.png">
 <link rel="icon" href="../erudyt/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../erudyt/apple-touch-icon.png">
@@ -492,9 +492,8 @@ const ava = (a, cls = 'md') => `<div class="ava ${cls}">${avatarSVG(a)}</div>`;
 const GAMES = [
   { app: 'vgadai', name: 'Вгадай мене', icon: '🍂', bg: 'var(--mustard)', desc: 'На двох: загадуй факти про себе й вгадуй про друга', m: 2 },
   { app: 'erudyt', name: 'Ерудит', icon: '🦉', bg: 'var(--sky)', desc: 'Вікторина на 2–4 гравців, 500+ питань на час', m: 4 },
-  { app: 'pikantno', name: 'Пікантно', icon: '🌶️', bg: 'var(--berry)', desc: 'Для двох дорослих: відверті питання й завдання', m: 2, adult: true },
 ];
-const prefix = { vgadai: 'vg:', erudyt: 'er:', pikantno: 'pk:' };
+const prefix = { vgadai: 'vg:', erudyt: 'er:' };
 const isMine = (app, c) => { try { return !!localStorage.getItem(prefix[app] + 'hosted:' + c) || !!localStorage.getItem(prefix[app] + 'state:' + c); } catch (e) { return false; } };
 const status = (i) => i.ph === 'lobby' ? 'чекає гравців' : (i.ph === 'final' || i.ph === 'over') ? 'між партіями' : 'гра йде';
 const L = window.RelayLobby ? new RelayLobby({ apps: GAMES.map((g) => g.app), onChange: () => render() }) : null;
