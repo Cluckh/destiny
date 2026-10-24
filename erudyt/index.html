@@ -191,7 +191,8 @@ input:focus,textarea:focus{border-color:var(--pumpkin);box-shadow:0 0 0 4px rgba
 .banner{border-radius:14px;padding:10px 14px;font-size:14px;display:flex;gap:10px;align-items:center;background:rgba(227,90,114,.18);border:2px solid rgba(227,90,114,.4);animation:rise .4s var(--ease)}
 
 /* ---------- stage ---------- */
-#stage{display:flex;flex-direction:column;gap:16px}
+#stage{display:flex;flex-direction:column;gap:12px}
+#banner:empty{display:none}
 .stage-head{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
 .stage-head h2{font-size:26px;font-weight:800;line-height:1.1}
 .stage-head p{margin:0}
@@ -200,7 +201,7 @@ input:focus,textarea:focus{border-color:var(--pumpkin);box-shadow:0 0 0 4px rgba
 .qtext{font-family:'Unbounded';font-weight:600;font-size:19px;line-height:1.3;word-wrap:break-word;overflow-wrap:anywhere}
 .opts{display:flex;flex-direction:column;gap:12px}
 .opt{--c:var(--pumpkin);position:relative;display:flex;align-items:center;gap:12px;width:100%;text-align:left;
-  padding:13px 14px;border-radius:18px;border:3px solid transparent;background:var(--panel-2);
+  padding:11px 14px;border-radius:18px;border:3px solid transparent;background:var(--panel-2);
   box-shadow:0 5px 0 var(--shadow);font-weight:800;font-size:17px;line-height:1.25;
   transition:transform .3s var(--spring),background .25s,border-color .25s,box-shadow .2s,opacity .3s}
 .opt .let{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex:none;font-family:'Unbounded';font-size:15px;
@@ -350,12 +351,91 @@ input:focus,textarea:focus{border-color:var(--pumpkin);box-shadow:0 0 0 4px rgba
 .timer.low i{background:linear-gradient(90deg,var(--berry),var(--pumpkin))}
 .tsec{font-family:'Unbounded';font-weight:800;font-size:22px;min-width:40px;text-align:right}
 .tsec.low{color:#ff8a9c;animation:pulse .5s ease-in-out infinite}
-.qtext.big{font-size:21px}
+.qtext.big{font-size:19px}
+.qtext.small{font-size:16px;line-height:1.3}
+/* компактна заставка категорії */
+.intro{padding:16px 16px;gap:10px;align-items:stretch;text-align:left}
+.intro .i-row{display:flex;align-items:center;gap:12px}
+.intro .i-cat{font-size:34px;line-height:1;animation:bob 2s ease-in-out infinite}
+.intro .i-txt{flex:1;min-width:0}
+.intro .i-num{font-family:'Unbounded';font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.intro .i-name{font-family:'Unbounded';font-weight:700;font-size:18px;margin-top:2px}
+.intro .final-tag,.intro .super-tag{align-self:center}
+.intro.super{border-color:var(--mustard);background:linear-gradient(135deg,#4a3a1c,#2d2142 60%);box-shadow:0 7px 0 var(--shadow),0 0 0 4px rgba(244,185,66,.25),0 18px 34px rgba(0,0,0,.35)}
+.super-tag{font-family:'Unbounded';font-weight:800;font-size:15px;background:var(--mustard);color:var(--ink);padding:9px 16px;border-radius:999px;box-shadow:0 4px 0 var(--mustard-d);animation:pulse .9s ease-in-out infinite}
+/* компактний результат */
+.rstrip{display:flex;align-items:center;justify-content:space-between;gap:10px;border-radius:20px;padding:10px 16px;color:var(--ink);background:var(--sage);box-shadow:0 6px 0 var(--sage-d)}
+.rstrip.bad{background:var(--berry);box-shadow:0 6px 0 var(--berry-d)}
+.rstrip .big{font-family:'Unbounded';font-weight:800;font-size:17px}
+.rstrip .delta{font-family:'Unbounded';font-weight:800;font-size:22px;white-space:nowrap}
+.rstrip .delta small{font-size:13px}
+.qsum{padding:14px}
+.ans-right{display:flex;align-items:center;gap:10px;margin-top:10px;background:rgba(147,185,119,.18);border:2px solid rgba(147,185,119,.6);border-radius:14px;padding:8px 10px;font-weight:900}
+.ans-right .let{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none;font-family:'Unbounded';font-size:13px;background:var(--c);color:var(--ink)}
+.ans-right .tx{flex:1;min-width:0;overflow-wrap:anywhere}
+.ans-right .okmark{color:var(--sage);font-size:20px}
+.board-card{padding:12px}
+.board-card .lbl{margin-bottom:6px}
+#btnReady{overflow:hidden;justify-content:space-between;padding-left:20px;padding-right:12px}
+#btnReady .nb{position:absolute;left:0;bottom:0;height:5px;width:100%;background:rgba(42,22,8,.35);transform-origin:left center}
+#btnReady .rdy{display:flex;gap:3px}
+#btnReady .rdy span{opacity:.45;transition:opacity .3s}
+#btnReady .rdy span.done{opacity:1}
+#btnReady .rdy .ava.xs{width:26px;height:26px;border-width:2px;box-shadow:none}
+@media (max-height:740px){ .qsum .qtext.small{font-size:14.5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden} .qsum{padding:11px 13px} .ans-right{margin-top:7px;padding:6px 9px} }
+.brow{height:46px;padding:0 10px;gap:9px}
+.brow.r-ok{background:linear-gradient(90deg,rgba(147,185,119,.22),#231936 70%)}
+.brow.r-no{background:linear-gradient(90deg,rgba(227,90,114,.18),#231936 70%)}
+.brow .who{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;line-height:1.15}
+.brow .who .ans{display:flex;align-items:center;gap:6px;min-width:0}
+.brow .who .ans small{flex:1;min-width:0}
+.brow .score{display:flex;flex-direction:column;align-items:flex-end;line-height:1.05;flex:none}
+.brow .score .pts{min-width:0;font-size:16px}
+.brow .score .gain{font-size:11.5px}
+.brow .who small{font-size:12px;color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.achip{display:inline-flex;align-items:center;gap:3px;flex:none;border-radius:8px;padding:1px 6px;font-family:'Unbounded';font-weight:700;font-size:11px;background:var(--c);color:var(--ink)}
+.achip b{font-family:'Unbounded';font-size:12px}
+.achip.no{opacity:.8}
+.achip.none{background:#3a2a52;color:var(--muted)}
+.brow .gain.zero{color:var(--muted);animation:none}
+.factbox{display:flex;gap:10px;padding:12px 14px;align-items:flex-start}
+.factbox .fi{font-size:20px;line-height:1.2}
+.factbox .fact-text{font-size:14.5px;line-height:1.4}
+/* головна кнопка завжди внизу на видноті, над панеллю емоцій */
+.sticky-act{position:sticky;bottom:calc(env(safe-area-inset-bottom) + 66px);z-index:4;display:flex;flex-direction:column;gap:8px;padding:10px 0 2px;
+  background:linear-gradient(rgba(29,21,48,0),rgba(29,21,48,.92) 26%)}
+.react{padding:3px}
+.react button{width:40px;height:40px;font-size:21px}
+.top-r{display:flex;gap:6px}
+.row-act{flex-direction:row;align-items:stretch;gap:8px}
+.row-act #btnReady{flex:1;min-width:0}
+.ib{position:relative;flex:none;width:52px;border:0;border-radius:16px;background:var(--panel-2);box-shadow:0 5px 0 var(--shadow);font-size:24px;transition:transform .15s var(--spring)}
+.ib:active{transform:translateY(3px);box-shadow:0 1px 0 var(--shadow)}
+.emo-pop{position:absolute;bottom:72px;left:0;display:flex;gap:2px;background:rgba(45,33,66,.97);border:3px solid var(--line);border-radius:18px;padding:4px;z-index:6;box-shadow:0 6px 0 var(--shadow);animation:pop .3s var(--spring)}
+.emo-pop button{width:42px;height:42px;border:0;background:transparent;font-size:23px;border-radius:12px}
+body.no-react #app{padding-bottom:calc(env(safe-area-inset-bottom) + 16px)}
+body.no-react .sticky-act{bottom:calc(env(safe-area-inset-bottom) + 8px)}
+.qwrap{gap:10px}
+.qwrap .opts{gap:9px}
+.qwrap .card{padding:14px 16px}
+#scr-room{gap:10px}
+@media (max-height:740px){
+  .qwrap{gap:8px}
+  .qwrap .qtext.big{font-size:16.5px}
+  .qwrap .card{padding:11px 13px}
+  .qwrap .opts{gap:7px}
+  .qwrap .opt{padding:8px 12px;font-size:15.5px;box-shadow:0 4px 0 var(--shadow)}
+  .qwrap .opt .let{width:30px;height:30px;font-size:13px}
+  .timer{height:12px}.tsec{font-size:18px}
+  .answered .ava.sm{width:32px;height:32px}
+  .brand{padding:5px 11px 5px 8px}.prog{padding:6px 12px}.menu-btn{width:40px;height:40px}
+}
 .opt.gone{opacity:.12;transform:scale(.94);pointer-events:none}
 .locked{text-align:center;font-weight:800;color:var(--mustard);padding:6px}
-.joker{align-self:center;font-size:15px;padding:11px 18px;background:#3f2c4f}
+.joker{margin-left:auto;font-size:13px;padding:7px 12px;background:#3f2c4f}
 .joker:disabled{opacity:.45}
-.answered{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding-top:4px}
+.answered{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding-top:2px}
+.answered .ava.sm{width:38px;height:38px}
 .answered .a{position:relative;transition:transform .3s var(--spring),opacity .3s;opacity:.55}
 .answered .a.done{opacity:1;transform:translateY(-3px)}
 .answered .ck{position:absolute;right:-5px;bottom:-5px;width:22px;height:22px;border-radius:50%;background:var(--sage);color:var(--ink);font-size:12px;font-weight:900;display:grid;place-items:center;border:3px solid var(--night);transform:scale(0);transition:transform .35s var(--spring)}
@@ -892,7 +972,7 @@ function mountEditor(root, profile, onChange) {
 const MAX_PLAYERS = 4;
 const OPT_COLORS = ['#f08a3c', '#7fb7d9', '#93b977', '#e35a72'];
 const LETTERS = ['А', 'Б', 'В', 'Г'];
-const INTRO_MS = 2600;
+const INTRO_MS = 2000;
 const REVEAL_MS = 16000;
 const DIFF = { 1: 'Легке', 2: 'Середнє', 3: 'Складне' };
 const stars = (d) => [1, 2, 3].map((i) => `<i class="${i <= d ? 'on' : ''}">★</i>`).join('');
@@ -919,6 +999,102 @@ function shuffle(arr) {
   return a;
 }
 function vibrate(p) { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} }
+
+/* ---------- музика й звуки: усе синтезується WebAudio, без файлів ---------- */
+const Sound = {
+  ac: null, out: null, mus: null, musIn: null, timer: null, next: 0, beat: 0,
+  musicOn: store.get('music', true), sfxOn: store.get('sfx', true),
+  init() {   // браузери дозволяють звук лише після дотику користувача
+    if (this.ac) { if (this.ac.state === 'suspended' && !document.hidden) this.ac.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    try { this.ac = new AC(); } catch (e) { return; }
+    this.out = this.ac.createGain(); this.out.gain.value = 0.9; this.out.connect(this.ac.destination);
+    this.mus = this.ac.createGain(); this.mus.gain.value = 0; this.mus.connect(this.out);
+    this.musIn = this.ac.createBiquadFilter(); this.musIn.type = 'lowpass'; this.musIn.frequency.value = 1700; this.musIn.connect(this.mus);
+    const b = this.ac.createBuffer(1, 1, 22050), src = this.ac.createBufferSource();   // «розблокування» звуку на iOS
+    src.buffer = b; src.connect(this.ac.destination); src.start(0);
+    if (this.musicOn) this.startMusic();
+  },
+  note(f, t, dur, type, vol, dest) {
+    const o = this.ac.createOscillator(), g = this.ac.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + Math.min(0.02, dur / 4));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(dest || this.out);
+    o.start(t); o.stop(t + dur + 0.05);
+  },
+  pad(f, t, dur, vol) {
+    const o = this.ac.createOscillator(), g = this.ac.createGain();
+    o.type = 'triangle'; o.frequency.value = f; o.detune.value = (Math.random() - 0.5) * 10;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.8);
+    g.gain.setValueAtTime(vol, t + dur - 0.5); g.gain.linearRampToValueAtTime(0, t + dur + 0.7);
+    o.connect(g); g.connect(this.musIn);
+    o.start(t); o.stop(t + dur + 0.8);
+  },
+  sfx(name) {
+    if (!this.ac || !this.sfxOn || this.ac.state !== 'running') return;
+    const t = this.ac.currentTime + 0.005;
+    try {
+      switch (name) {
+        case 'click': this.note(880, t, 0.06, 'sine', 0.1); this.note(1320, t + 0.012, 0.05, 'sine', 0.05); break;
+        case 'select': this.note(660, t, 0.08, 'triangle', 0.13); this.note(990, t + 0.06, 0.12, 'triangle', 0.11); break;
+        case 'tick': this.note(1480, t, 0.035, 'square', 0.035); break;
+        case 'good': [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => this.note(f, t + i * 0.08, 0.4, 'triangle', 0.15)); break;
+        case 'bad': this.note(392, t, 0.25, 'triangle', 0.13); this.note(311.13, t + 0.18, 0.45, 'triangle', 0.12); break;
+        case 'super': [784, 988, 1175, 1568, 1976].forEach((f, i) => this.note(f, t + i * 0.055, 0.3, 'square', 0.04)); break;
+        case 'win': [523.25, 659.25, 783.99, 659.25, 1046.5].forEach((f, i) => this.note(f, t + i * 0.14, 0.55, 'triangle', 0.16)); break;
+        case 'join': this.note(1046.5, t, 0.5, 'sine', 0.11); this.note(1568, t + 0.1, 0.6, 'sine', 0.07); break;
+      }
+    } catch (e) {}
+  },
+  toggleMusic() {
+    this.musicOn = !this.musicOn; store.set('music', this.musicOn);
+    this.init();
+    if (this.musicOn) this.startMusic(); else this.stopMusic();
+  },
+  startMusic() {
+    if (!this.ac) return;
+    const t = this.ac.currentTime;
+    this.mus.gain.cancelScheduledValues(t); this.mus.gain.setValueAtTime(this.mus.gain.value, t); this.mus.gain.linearRampToValueAtTime(0.55, t + 2);
+    if (this.timer) return;
+    this.next = t + 0.1;
+    this.timer = setInterval(() => this.schedule(), 150);
+  },
+  stopMusic() {
+    if (!this.ac) return;
+    const t = this.ac.currentTime;
+    this.mus.gain.cancelScheduledValues(t); this.mus.gain.setValueAtTime(this.mus.gain.value, t); this.mus.gain.linearRampToValueAtTime(0, t + 0.6);
+    clearInterval(this.timer); this.timer = null;
+  },
+  schedule() {   // спокійний луп: Cmaj7 → Am7 → Fmaj7 → G, 80 ударів на хвилину
+    if (!this.ac || this.ac.state !== 'running') return;
+    const E8 = 60 / 80 / 2;
+    const CH = [[261.63, 329.63, 392, 493.88], [220, 261.63, 329.63, 392], [174.61, 220, 261.63, 329.63], [196, 246.94, 293.66, 392]];
+    const ARP = [0, 2, 1, 3, 2, 1, 3, 0];
+    if (this.next < this.ac.currentTime) this.next = this.ac.currentTime + 0.05;
+    while (this.next < this.ac.currentTime + 0.6) {
+      const bar = Math.floor(this.beat / 8) % 4, ch = CH[bar], pos = this.beat % 8;
+      if (pos === 0) {
+        ch.slice(0, 3).forEach((f) => this.pad(f / 2, this.next, E8 * 8, 0.035));
+        this.note(ch[0] / 4, this.next, E8 * 7, 'sine', 0.08, this.musIn);
+      }
+      if (pos % 2 === 0 || Math.random() < 0.3) this.note(ch[ARP[pos]] * (pos >= 4 ? 2 : 1), this.next, 1.1, 'sine', 0.035, this.musIn);
+      this.next += E8; this.beat++;
+    }
+  },
+};
+['pointerdown', 'touchend', 'click'].forEach((ev) => document.addEventListener(ev, () => Sound.init(), { capture: true, passive: true }));
+document.addEventListener('pointerdown', (e) => {
+  const b = e.target.closest('button, .opt'); if (!b || b.disabled) return;
+  if (b.id === 'btnMusic') return;
+  Sound.sfx(b.classList.contains('opt') || b.classList.contains('jopt') ? 'select' : 'click');
+}, true);
+document.addEventListener('visibilitychange', () => {
+  if (!Sound.ac) return;
+  if (document.hidden) Sound.ac.suspend(); else Sound.ac.resume();
+});
 
 /* ---------- floating emotes ---------- */
 function floatEmoji(e, pid) {
@@ -1057,7 +1233,10 @@ function showLink(url) {
 /* ---------- room (lobby / game / final) ---------- */
 function renderRoom() {
   const first = show('room');
-  $('#react').classList.toggle('hidden', S.phase === 'lobby');   // у лобі панель емоцій перекривала кнопки
+  // у лобі й під час питання панель емоцій перекривала кнопки на маленьких екранах
+  const noReact = S.phase !== 'final';   // на екрані результатів емоції — у кнопці 😀 біля «Далі»
+  $('#react').classList.toggle('hidden', noReact);
+  document.body.classList.toggle('no-react', noReact);
   renderTop();
   renderBanner();
   const k = stageKey();
@@ -1081,8 +1260,10 @@ function renderTop() {
   const inGame = S.phase === 'question' || S.phase === 'reveal';
   top.innerHTML = `<div class="brand"><span class="b-ico">🦉</span><span class="disp">Ерудит</span></div>
     ${inGame ? `<div class="prog"><b>${S.qi + 1}</b>/${S.plan.length}</div>` : ''}
-    <button class="menu-btn" id="btnMenu" aria-label="Меню">⋯</button>`;
+    <span class="top-r"><button class="menu-btn" id="btnMusic" aria-label="Музика">${Sound.musicOn ? '🎵' : '🔇'}</button>
+    <button class="menu-btn" id="btnMenu" aria-label="Меню">⋯</button></span>`;
   $('#btnMenu').onclick = openMenu;
+  $('#btnMusic').onclick = () => { Sound.toggleMusic(); renderTop(); toast(Sound.musicOn ? 'Музику увімкнено 🎵' : 'Музику вимкнено 🔇'); };
 }
 function renderBanner() {
   const b = $('#banner');
@@ -1130,8 +1311,9 @@ function buildLobby(st) {
     <div class="card rules"><div class="lbl">Правила</div>
       <p>🎯 Усі відповідають одночасно. Правильно: <b>100 / 200 / 300</b> очок залежно від складності, плюс до <b>50 %</b> бонусу за швидкість.</p>
       <p>✂️ Кожен має одну підказку <b>50/50</b> на гру.</p>
+      <p>🎲 Питання різної складності йдуть упереміш. Іноді трапляється <b>⚡ супер-питання</b> — очки ×2 або ×3.</p>
       <p>🔥 Останнє питання — <b>фінальне, очки ×2</b>.</p></div>
-    ${IS_HOST ? `<button class="btn" id="btnStart">Почати гру ➜</button><p class="hint center" id="startHint" style="margin:-6px 0 0"></p>` : `<div class="status"><span class="dots"><i></i><i></i><i></i></span> ${nickOf(S.host)} налаштовує гру</div>`}`;
+    ${IS_HOST ? `<div class="sticky-act"><button class="btn" id="btnStart">Почати гру ➜</button><p class="hint center" id="startHint" style="margin:0"></p></div>` : `<div class="status"><span class="dots"><i></i><i></i><i></i></span> ${nickOf(S.host)} налаштовує гру</div>`}`;
   if (IS_HOST) {
     $('#btnShare', st).onclick = shareInvite;
     $('#btnCopy', st).onclick = copyInvite;
@@ -1148,23 +1330,24 @@ function buildQuestion(st) {
   const mine = q.answers[PID];
   const fifty = (q.fifty && q.fifty[PID]) || [];
   st.innerHTML = `
-    <div class="intro card" id="intro">
-      <div class="i-cat">${ce}</div>
-      <div class="i-num">Питання ${S.qi + 1} з ${S.plan.length}</div>
-      <h2>${cn}</h2>
-      <div class="diff">${stars(q.d)} <span>${DIFF[q.d]}</span></div>
-      ${q.final ? '<div class="final-tag">🔥 Фінальне питання · очки ×2</div>' : ''}
+    <div class="intro card ${q.super ? 'super' : ''}" id="intro">
+      <div class="i-row"><span class="i-cat">${ce}</span>
+        <div class="i-txt"><div class="i-num">Питання ${S.qi + 1} з ${S.plan.length}</div><div class="i-name">${cn}</div></div>
+        <span class="diff">${stars(q.d)}</span></div>
+      ${q.super ? `<div class="super-tag">⚡ Супер-питання · очки ×${q.mult}</div>` : q.final ? '<div class="final-tag">🔥 Фінальне питання · очки ×2</div>' : ''}
     </div>
     <div class="qwrap" id="qwrap">
-      <div class="qmeta"><span class="tag">${ce} ${cn}</span><span class="diff">${stars(q.d)}</span>${q.final ? '<span class="tag hot">×2</span>' : ''}</div>
+      <div class="qmeta"><span class="tag">${ce} ${cn}</span><span class="diff">${stars(q.d)}</span>${q.mult > 1 ? `<span class="tag hot">${q.super ? '⚡ ' : ''}×${q.mult}</span>` : ''}
+        ${mine ? '' : `<button class="chip joker" id="btnFifty" ${P(PID).fifty ? 'disabled' : ''}>✂️ 50/50</button>`}</div>
       <div class="timerrow"><div class="timer" id="timer"><i></i></div><div class="tsec" id="tsec">${S.settings.timer}</div></div>
       <div class="card"><div class="qtext big">${esc(q.text)}</div></div>
       <div class="opts" id="opts">${q.options.map((o, i) => `<button class="opt ${mine && mine.i === i ? 'sel' : ''} ${fifty.includes(i) ? 'gone' : ''}" data-i="${i}" style="--c:${OPT_COLORS[i]}" ${mine ? 'disabled' : ''}>
         <span class="let">${LETTERS[i]}</span><span class="tx">${esc(o)}</span></button>`).join('')}</div>
-      ${mine ? `<div class="locked pop">🔒 Відповідь прийнято — чекаємо на інших</div>`
-        : `<button class="chip joker" id="btnFifty" ${P(PID).fifty ? 'disabled' : ''}>✂️ 50/50 ${P(PID).fifty ? '· використано' : '· одна на гру'}</button>`}
+      ${mine ? `<div class="locked pop">🔒 Відповідь прийнято — чекаємо на інших</div>` : ''}
       <div class="answered" id="answered"></div>
     </div>`;
+  const sk = 'sq:' + CODE;
+  if (q.super && store.get(sk, '') !== S.game + ':' + S.qi) { store.set(sk, S.game + ':' + S.qi); Sound.sfx('super'); vibrate([20, 30, 20]); }
   if (!mine) {
     $('#opts', st).onclick = (e) => {
       const b = e.target.closest('.opt'); if (!b || b.disabled || b.classList.contains('gone')) return;
@@ -1185,47 +1368,53 @@ function buildReveal(st) {
   const q = S.q, res = q.results || {};
   const me = res[PID] || { ok: false, pts: 0 };
   const answered = q.answers[PID];
-  const fact = q.fact;
-  let title, cls;
-  if (me.ok) { title = me.pts >= (q.final ? 2 : 1) * q.d * 140 ? 'Блискавично! ⚡' : 'Правильно! 🎯'; cls = ''; }
-  else if (!answered) { title = 'Час вийшов ⏰'; cls = 'bad'; }
-  else { title = 'Мимо 🙈'; cls = 'bad'; }
-  const pickers = (i) => S.order.filter((pid) => res[pid] && res[pid].i === i).map((pid) => `<span class="pk">${avatarSVG(P(pid).avatar, { noBody: true })}</span>`).join('');
+  let title, cls = '';
+  if (me.ok) title = me.bonus >= q.d * 100 * 0.35 ? '⚡ Блискавично!' : '🎯 Правильно!';
+  else if (!answered) { title = '⏰ Час вийшов'; cls = 'bad'; }
+  else { title = '🙈 Мимо'; cls = 'bad'; }
   st.innerHTML = `
-    <div class="result ${cls} pop"><div class="big">${title}</div>
-      <div class="delta">${me.ok ? '+' + me.pts : '0'}${q.final && me.ok ? ' <small>(×2)</small>' : ''}</div>
-      ${me.ok && me.bonus ? `<div class="sub">з них ⚡ ${me.bonus * (q.final ? 2 : 1)} за швидкість · ${(me.ms / 1000).toFixed(1)} с</div>` : ''}
-      ${P(PID).streak >= 3 ? `<div class="sub">🔥 Серія: ${P(PID).streak} поспіль!</div>` : ''}</div>
-    <div class="card"><div class="qtext">${esc(q.text)}</div></div>
-    <div class="opts">${q.options.map((o, i) => `<div class="opt ${i === q.correct ? 'right' : (answered && answered.i === i ? 'wrong' : 'dim')}" style="--c:${OPT_COLORS[i]}">
-      <span class="let">${LETTERS[i]}</span><span class="tx">${esc(o)}</span><span class="pickers">${pickers(i)}</span></div>`).join('')}</div>
-    ${fact ? `<div class="card factbox"><div class="lbl">💡 А ви знали?</div><div class="fact-text">${esc(fact)}</div></div>` : ''}
-    <div class="card"><div class="lbl">Таблиця</div><div class="board" id="board"></div></div>
-    <button class="btn" id="btnReady">${S.qi + 1 >= S.plan.length ? 'До результатів 🏆' : 'Далі ➜'}</button>
-    <div class="readyrow" id="readyrow"></div>
-    <div class="nextbar"><i id="nextbar"></i></div>`;
+    <div class="rstrip ${cls} pop"><span class="big">${title}</span>
+      <span class="delta">${me.ok ? '+' + me.pts : '0'}${me.ok && q.mult > 1 ? `<small> ×${q.mult}</small>` : ''}</span></div>
+    <div class="card qsum"><div class="qtext small">${esc(q.text)}</div>
+      <div class="ans-right"><span class="let" style="--c:${OPT_COLORS[q.correct]}">${LETTERS[q.correct]}</span><span class="tx">${esc(q.options[q.correct])}</span><span class="okmark">✓</span></div></div>
+    <div class="card board-card"><div class="lbl">Хто як відповів</div><div class="board" id="board"></div></div>
+    ${q.fact ? `<div class="card factbox"><span class="fi">💡</span><span class="fact-text">${esc(q.fact)}</span></div>` : ''}
+    <div class="sticky-act row-act">
+      <button class="ib" id="emoBtn" type="button" aria-label="Емоції">😀</button>
+      <div class="emo-pop hidden" id="emoPop">${REACTIONS.map((e) => `<button type="button" data-e="${e}">${e}</button>`).join('')}</div>
+      <button class="btn" id="btnReady"><span class="nb" id="nextbar"></span><span class="bl" id="readyLbl">${S.qi + 1 >= S.plan.length ? 'До результатів 🏆' : 'Далі ➜'}</span><span class="rdy" id="readyrow"></span></button>
+    </div>`;
   drawBoard($('#board', st), true);
-  $('#btnReady', st).onclick = (e) => { e.currentTarget.disabled = true; e.currentTarget.innerHTML = '✓ Готово'; dispatch({ k: 'ready' }); };
-  if (S.ready && S.ready[PID]) { const b = $('#btnReady', st); b.disabled = true; b.innerHTML = '✓ Готово'; }
+  $('#emoBtn', st).onclick = () => $('#emoPop', st).classList.toggle('hidden');
+  $('#emoPop', st).onclick = (ev) => { const b = ev.target.closest('button'); if (!b) return; sendEmoji(b.dataset.e); $('#emoPop', st).classList.add('hidden'); };
+  $('#btnReady', st).onclick = (e) => { e.currentTarget.disabled = true; $('#readyLbl', st).textContent = '✓ Чекаємо інших'; dispatch({ k: 'ready' }); };
+  if (S.ready && S.ready[PID]) { $('#btnReady', st).disabled = true; $('#readyLbl', st).textContent = '✓ Чекаємо інших'; }
   const fxKey = 'fx:' + CODE;
   if (store.get(fxKey, '') !== S.game + ':' + S.qi) {
     store.set(fxKey, S.game + ':' + S.qi);
     setTimeout(() => confetti(me.ok), 150);
+    Sound.sfx(me.ok ? 'good' : 'bad');
     vibrate(me.ok ? [30, 40, 30] : 120);
   }
 }
 function drawBoard(box, animate) {
-  const res = (S.q && S.q.results) || {};
+  const q = S.q, res = (q && q.results) || {};
   const rows = S.order.map((pid) => ({ pid, score: P(pid).score, gain: res[pid] ? res[pid].pts : 0 }));
   const before = rows.slice().sort((a, b) => (b.score - b.gain) - (a.score - a.gain) || S.order.indexOf(a.pid) - S.order.indexOf(b.pid));
   const after = rows.slice().sort((a, b) => b.score - a.score || S.order.indexOf(a.pid) - S.order.indexOf(b.pid));
-  const H = 64;
-  box.style.height = rows.length * H + 'px';
+  const H = 52;
+  box.style.height = (rows.length * H - 6) + 'px';
   box.innerHTML = rows.map((r) => {
     const oldI = before.indexOf(r), newI = after.indexOf(r);
-    return `<div class="brow ${r.pid === PID ? 'me' : ''}" data-pid="${r.pid}" data-new="${newI}" style="top:${(animate ? oldI : newI) * H}px">
-      <span class="pos">${newI + 1}</span>${ava(P(r.pid).avatar, 'xs')}<span class="nm">${nickOf(r.pid)}</span>
-      ${r.gain ? `<span class="gain">+${r.gain}</span>` : ''}<span class="pts" data-from="${animate ? r.score - r.gain : r.score}" data-to="${r.score}">${animate ? r.score - r.gain : r.score}</span></div>`;
+    const x = res[r.pid];
+    const picked = x && x.i != null;
+    const chip = picked ? `<span class="achip ${x.ok ? 'ok' : 'no'}" style="--c:${OPT_COLORS[x.i]}">${LETTERS[x.i]} ${x.ok ? '✓' : '✗'}</span>` : '<span class="achip none">⏰</span>';
+    const sub = picked ? `${esc(q.options[x.i])}${x.ok && x.ms != null ? ` · ${(x.ms / 1000).toFixed(1)} с` : ''}` : 'не встигли';
+    return `<div class="brow ${r.pid === PID ? 'me' : ''} ${picked ? (x.ok ? 'r-ok' : 'r-no') : 'r-none'}" data-new="${newI}" style="top:${(animate ? oldI : newI) * H}px">
+      <span class="pos">${newI + 1}</span>${ava(P(r.pid).avatar, 'xs')}
+      <span class="who"><span class="nm">${r.pid === PID ? 'Ти' : nickOf(r.pid)}</span><span class="ans">${chip}<small>${sub}</small></span></span>
+      <span class="score"><span class="pts" data-from="${animate ? r.score - r.gain : r.score}" data-to="${r.score}">${animate ? r.score - r.gain : r.score}</span>
+        <span class="gain ${r.gain ? '' : 'zero'}">${r.gain ? '+' + r.gain : '+0'}</span></span></div>`;
   }).join('');
   if (!animate) return;
   setTimeout(() => {
@@ -1262,7 +1451,7 @@ function buildFinal(st) {
       ${S.order.map((pid) => `<div class="award">${ava(P(pid).avatar, 'xs')} <span>${nickOf(pid)}</span><b>${P(pid).right || 0} з ${hist.length} · ${acc(pid)}%</b></div>`).join('')}
       ${(() => { const best = S.order.slice().sort((a, b) => (P(b).bestStreak || 0) - (P(a).bestStreak || 0))[0]; return best && (P(best).bestStreak || 0) >= 3 ? `<div class="award">🔥 <span>Найдовша серія</span><b>${nickOf(best)} · ${P(best).bestStreak}</b></div>` : ''; })()}
     </div>
-    ${IS_HOST ? `<button class="btn" id="btnAgain">🔄 Ще одна гра</button><button class="btn ghost small" id="btnLobby">⚙️ Змінити налаштування</button>`
+    ${IS_HOST ? `<div class="sticky-act"><button class="btn" id="btnAgain">🔄 Ще одна гра</button><button class="btn ghost small" id="btnLobby">⚙️ Змінити налаштування</button></div>`
       : `<div class="status"><span class="dots"><i></i><i></i><i></i></span> ${nickOf(S.host)} може запустити ще одну гру</div>`}`;
   if (IS_HOST) {
     $('#btnAgain', st).onclick = () => dispatch({ k: 'start' });
@@ -1272,6 +1461,7 @@ function buildFinal(st) {
   if (store.get(fxKey, '') !== S.game + ':final') {
     store.set(fxKey, S.game + ':final');
     setTimeout(() => { confetti(true); setTimeout(() => confetti(true), 700); }, 300);
+    Sound.sfx('win');
   }
 }
 
@@ -1301,7 +1491,7 @@ function patchStage() {
   }
   if (S.phase === 'reveal') {
     const row = $('#readyrow', st);
-    if (row) row.innerHTML = S.order.filter(isOnline).map((pid) => `<span class="${S.ready[pid] ? 'done' : ''}">${ava(P(pid).avatar, 'xs')}${S.ready[pid] ? '✓' : ''}</span>`).join('');
+    if (row) row.innerHTML = S.order.filter(isOnline).map((pid) => `<span class="${S.ready[pid] ? 'done' : ''}">${ava(P(pid).avatar, 'xs')}</span>`).join('');
   }
 }
 let lastTick = -1;
@@ -1325,7 +1515,7 @@ function tick() {
       ts.textContent = secs;
       const low = secs <= 5;
       ts.classList.toggle('low', low); $('#timer').classList.toggle('low', low);
-      if (low && secs > 0 && !inIntro && !q.answers[PID] && secs !== lastTick) { lastTick = secs; vibrate(10); }
+      if (low && secs > 0 && !inIntro && !q.answers[PID] && secs !== lastTick) { lastTick = secs; vibrate(10); Sound.sfx('tick'); }
     }
   } else if (S.phase === 'reveal') {
     const nb = $('#nextbar');
@@ -1342,10 +1532,13 @@ function openMenu() {
     <div class="card" style="padding:14px"><div class="lbl">Гравці</div>${slotsHTML()}</div>
     <button class="btn blue" id="mInvite">🔗 Запросити ще когось</button>
     <button class="btn ghost" id="mProfile">🎨 Змінити героя</button>
+    <div class="row"><button class="btn ghost small" id="mMusic">${Sound.musicOn ? '🎵 Музика: так' : '🔇 Музика: ні'}</button><button class="btn ghost small" id="mSfx">${Sound.sfxOn ? '🔔 Звуки: так' : '🔕 Звуки: ні'}</button></div>
     ${IS_HOST && inGame ? '<button class="btn ghost" id="mEnd">🏁 Завершити гру зараз</button>' : ''}
     <button class="btn ghost" id="mLeave">🚪 Вийти з кімнати</button>`, (b) => {
     $('#mInvite', b).onclick = () => { closeSheet(); shareInvite(); };
     $('#mProfile', b).onclick = openProfileSheet;
+    $('#mMusic', b).onclick = (e) => { Sound.toggleMusic(); e.currentTarget.textContent = Sound.musicOn ? '🎵 Музика: так' : '🔇 Музика: ні'; renderTop(); };
+    $('#mSfx', b).onclick = (e) => { Sound.sfxOn = !Sound.sfxOn; store.set('sfx', Sound.sfxOn); e.currentTarget.textContent = Sound.sfxOn ? '🔔 Звуки: так' : '🔕 Звуки: ні'; };
     const end = $('#mEnd', b);
     if (end) end.onclick = () => { if (confirm('Завершити гру й показати результати?')) { closeSheet(); dispatch({ k: 'end' }); } };
     $('#mLeave', b).onclick = () => { closeSheet(); leaveRoom(); };
@@ -1364,12 +1557,12 @@ function openProfileSheet() {
 
 /* reactions */
 $('#react').innerHTML = REACTIONS.map((e) => `<button type="button" data-e="${e}" aria-label="${e}">${e}</button>`).join('');
-$('#react').addEventListener('click', (ev) => {
-  const b = ev.target.closest('button'); if (!b) return;
-  floatEmoji(b.dataset.e, PID);
-  if (IS_HOST) Net.broadcast({ t: 'emoji', e: b.dataset.e, pid: PID });
-  else Net.send({ t: 'emoji', e: b.dataset.e, pid: PID });
-});
+function sendEmoji(e) {
+  floatEmoji(e, PID);
+  if (IS_HOST) Net.broadcast({ t: 'emoji', e, pid: PID });
+  else Net.send({ t: 'emoji', e, pid: PID });
+}
+$('#react').addEventListener('click', (ev) => { const b = ev.target.closest('button'); if (b) sendEmoji(b.dataset.e); });
 
 /* =========================================================
    Host-side game logic (господар — єдине джерело правди)
@@ -1388,24 +1581,32 @@ function newPlayer(p) {
 function makePlan(count) {
   const used = new Set(store.get('used', []));
   const nHard = Math.round(count * 0.25), nEasy = Math.round(count * 0.4), nMed = count - nHard - nEasy;
-  const plan = [];
+  const picked = [];
   [[1, nEasy], [2, nMed], [3, nHard]].forEach(([d, n]) => {
-    let pool = Q.map((q, i) => i).filter((i) => Q[i][0] === d);
+    const pool = Q.map((q, i) => i).filter((i) => Q[i][0] === d);
     let fresh = pool.filter((i) => !used.has(i));
     if (fresh.length < n) { pool.forEach((i) => used.delete(i)); fresh = pool; }
-    // намагаємось не ставити поруч дві однакові категорії
-    const picked = [];
-    for (const i of shuffle(fresh)) {
-      if (picked.length >= n) break;
-      if (picked.length && Q[picked[picked.length - 1]][1] === Q[i][1] && fresh.length > n * 2) continue;
-      picked.push(i);
-    }
-    for (const i of shuffle(fresh)) { if (picked.length >= n) break; if (!picked.includes(i)) picked.push(i); }
-    plan.push(...picked);
+    picked.push(...shuffle(fresh).slice(0, n));
   });
+  // складність упереміш; першим — легке, для розминки
+  const plan = shuffle(picked);
+  const e = plan.findIndex((id) => Q[id][0] === 1);
+  if (e > 0) [plan[0], plan[e]] = [plan[e], plan[0]];
+  // намагаємось не ставити поруч дві однакові категорії
+  for (let k = 0; k < 60; k++) {
+    let bad = -1;
+    for (let i = 1; i < plan.length; i++) if (Q[plan[i]][1] === Q[plan[i - 1]][1]) { bad = i; break; }
+    if (bad < 0) break;
+    const j = 1 + rnd(plan.length - 1);
+    [plan[bad], plan[j]] = [plan[j], plan[bad]];
+  }
+  // супер-питання: складні (не перше й не останнє), очки ×2 або ×3
+  const mult = plan.map(() => 1);
+  const hard = plan.map((id, i) => i).filter((i) => Q[plan[i]][0] === 3 && i > 0 && i < plan.length - 1);
+  shuffle(hard).slice(0, Math.max(1, Math.round(count / 7))).forEach((i) => { mult[i] = Math.random() < 0.35 ? 3 : 2; });
   plan.forEach((i) => used.add(i));
   store.set('used', Array.from(used));
-  return plan;
+  return { plan, mult };
 }
 function beginQuestion(s) {
   const id = s.plan[s.qi];
@@ -1417,6 +1618,9 @@ function beginQuestion(s) {
     startAt: now + INTRO_MS, endAt: now + INTRO_MS + s.settings.timer * 1000,
     final: s.qi === s.plan.length - 1, answers: {}, fifty: {}, results: null,
   };
+  const m = (s.mult && s.mult[s.qi]) || 1;
+  s.q.super = m > 1;
+  s.q.mult = s.q.final ? Math.max(2, m) : m;
   s.phase = 'question'; s.ready = {}; s.autoAt = 0;
 }
 function closeQuestion(s) {
@@ -1427,7 +1631,7 @@ function closeQuestion(s) {
     const ok = !!a && a.i === q.correct;
     const base = 100 * q.d;
     const bonus = ok ? Math.round(base * 0.5 * Math.max(0, 1 - a.ms / total)) : 0;
-    const pts = ok ? (base + bonus) * (q.final ? 2 : 1) : 0;
+    const pts = ok ? (base + bonus) * (q.mult || (q.final ? 2 : 1)) : 0;
     pl.score += pts;
     pl.streak = ok ? pl.streak + 1 : 0;
     pl.bestStreak = Math.max(pl.bestStreak || 0, pl.streak);
@@ -1458,7 +1662,7 @@ function hostAct(pid, a) {   // повертає true, якщо стан змі�
       if (pid !== s.host || onlineList().length < 2) return false;
       s.order = s.order.filter((p) => isOnline(p));   // хто пішов до старту — не грає
       s.order.forEach((p) => { Object.assign(s.players[p], { score: 0, fifty: false, streak: 0, bestStreak: 0, right: 0 }); });
-      s.game++; s.plan = makePlan(s.settings.count); s.qi = 0; s.history = [];
+      s.game++; const mp = makePlan(s.settings.count); s.plan = mp.plan; s.mult = mp.mult; s.qi = 0; s.history = [];
       beginQuestion(s);
       return true;
     case 'lobby':
@@ -1624,6 +1828,7 @@ const Net = {
     else { S.players[pid].nick = String(d.profile.nick || S.players[pid].nick).slice(0, 16); S.players[pid].avatar = d.profile.avatar || S.players[pid].avatar; }
     setOnline();
     commit();
+    if (!wasHere) Sound.sfx('join');
     if (!wasHere) toast(known ? `${esc(S.players[pid].nick)} повертається 👋` : `${esc(S.players[pid].nick)} у грі! 🎉`);
   },
 
